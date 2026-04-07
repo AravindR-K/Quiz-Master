@@ -1,0 +1,71 @@
+<div class="dashboard-layout">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <span class="logo-icon">📝</span><h2>QuizMaster</h2><span class="role-badge student">Student</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a routerLink="/student/dashboard" class="nav-item active"><span class="nav-icon">🏠</span><span>Dashboard</span></a>
+      <a routerLink="/student/profile" class="nav-item"><span class="nav-icon">👤</span><span>Profile</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar">{{ authService.currentUser()?.name?.charAt(0) || 'S' }}</div>
+        <div class="user-details">
+          <span class="user-name">{{ authService.currentUser()?.name }}</span>
+          <span class="user-email">{{ authService.currentUser()?.email }}</span>
+        </div>
+      </div>
+      <button class="logout-btn" (click)="logout()"><span>🚪</span> Logout</button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h1>Welcome, {{ authService.currentUser()?.name }}! 👋</h1>
+      <p>Available quizzes are listed below. Select one to start.</p>
+    </div>
+
+    @if (loading()) {
+      <div class="loading-state"><div class="loader"></div><p>Loading quizzes...</p></div>
+    } @else if (quizzes().length === 0) {
+      <div class="empty-state">
+        <span class="empty-icon">📋</span>
+        <h3>No quizzes available</h3>
+        <p>Check back later for new quizzes!</p>
+      </div>
+    } @else {
+      <div class="quiz-grid">
+        @for (quiz of quizzes(); track quiz.id) {
+          <div class="quiz-card" [class.taken]="quiz.taken">
+            <div class="quiz-card-top">
+              <div class="quiz-icon-wrap">
+                <span class="quiz-icon">{{ quiz.taken ? '✅' : '📝' }}</span>
+              </div>
+              <div class="quiz-info">
+                <h3>{{ quiz.title }}</h3>
+                <div class="quiz-meta">
+                  <span>⏱️ {{ quiz.timer }} min</span>
+                  <span>📝 {{ quiz.totalQuestions }} questions</span>
+                </div>
+              </div>
+            </div>
+            @if (quiz.taken) {
+              <div class="quiz-result">
+                <div class="result-bar">
+                  <div class="result-fill" [style.width.%]="quiz.percentage"
+                       [class.good]="quiz.percentage >= 70"
+                       [class.avg]="quiz.percentage >= 40 && quiz.percentage < 70"
+                       [class.poor]="quiz.percentage < 40"></div>
+                </div>
+                <span class="result-text">Score: {{ quiz.score }}/{{ quiz.totalMarks }} ({{ quiz.percentage }}%)</span>
+              </div>
+              <span class="taken-badge">Completed</span>
+            } @else {
+              <a [routerLink]="['/student/quiz', quiz.id]" class="start-btn">Start Quiz →</a>
+            }
+          </div>
+        }
+      </div>
+    }
+  </main>
+</div>

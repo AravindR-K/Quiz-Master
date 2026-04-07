@@ -1,0 +1,68 @@
+<div class="dashboard-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <span class="logo-icon">📝</span>
+      <h2>QuizMaster</h2>
+      <span class="role-badge">Admin</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a routerLink="/admin/dashboard" class="nav-item active">
+        <span class="nav-icon">🏠</span>
+        <span>Dashboard</span>
+      </a>
+      <a routerLink="/admin/users" class="nav-item">
+        <span class="nav-icon">👥</span>
+        <span>Users</span>
+      </a>
+      <a routerLink="/admin/generate-quiz" class="nav-item">
+        <span class="nav-icon">➕</span>
+        <span>Generate Quiz</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar">{{ authService.currentUser()?.name?.charAt(0) || 'A' }}</div>
+        <div class="user-details">
+          <span class="user-name">{{ authService.currentUser()?.name }}</span>
+          <span class="user-email">{{ authService.currentUser()?.email }}</span>
+        </div>
+      </div>
+      <button class="logout-btn" (click)="logout()">
+        <span>🚪</span> Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="page-header">
+      <h1>Admin Dashboard</h1>
+      <p>Manage quizzes and monitor student activity</p>
+    </div>
+
+    <div class="dashboard-cards">
+      <a routerLink="/admin/users" class="dash-card card-users">
+        <div class="card-icon-wrap">
+          <span class="card-icon">👥</span>
+        </div>
+        <div class="card-content">
+          <h3>Users</h3>
+          <p>View registered students, check who's logged in, and review their test history</p>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+
+      <a routerLink="/admin/generate-quiz" class="dash-card card-quiz">
+        <div class="card-icon-wrap">
+          <span class="card-icon">📋</span>
+        </div>
+        <div class="card-content">
+          <h3>Generate Quiz</h3>
+          <p>Create a new quiz by uploading questions from an Excel file with timer settings</p>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+    </div>
+  </main>
+</div>

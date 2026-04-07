@@ -1,0 +1,80 @@
+<div class="dashboard-layout">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <span class="logo-icon">📝</span><h2>QuizMaster</h2><span class="role-badge">Admin</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a routerLink="/admin/dashboard" class="nav-item"><span class="nav-icon">🏠</span><span>Dashboard</span></a>
+      <a routerLink="/admin/users" class="nav-item active"><span class="nav-icon">👥</span><span>Users</span></a>
+      <a routerLink="/admin/generate-quiz" class="nav-item"><span class="nav-icon">➕</span><span>Generate Quiz</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar">{{ authService.currentUser()?.name?.charAt(0) || 'A' }}</div>
+        <div class="user-details"><span class="user-name">{{ authService.currentUser()?.name }}</span><span class="user-email">{{ authService.currentUser()?.email }}</span></div>
+      </div>
+      <button class="logout-btn" (click)="logout()"><span>🚪</span> Logout</button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    @if (loading()) {
+      <div class="loading-state"><div class="loader"></div><p>Loading details...</p></div>
+    } @else if (submission()) {
+      <div class="breadcrumb">
+        <a routerLink="/admin/users">Users</a> <span>→</span>
+        <a [routerLink]="['/admin/users', submission().student?.id || submission().student?._id, 'history']">{{ submission().student?.name }}</a>
+        <span>→</span> <span class="current">{{ submission().quiz?.title }}</span>
+      </div>
+
+      <!-- Score Summary -->
+      <div class="score-summary">
+        <div class="score-card">
+          <span class="score-label">Score</span>
+          <span class="score-value">{{ submission().score }}/{{ submission().totalMarks }}</span>
+        </div>
+        <div class="score-card">
+          <span class="score-label">Percentage</span>
+          <span class="score-value" [class.good]="submission().percentage >= 70" [class.avg]="submission().percentage >= 40 && submission().percentage < 70" [class.poor]="submission().percentage < 40">{{ submission().percentage }}%</span>
+        </div>
+        <div class="score-card">
+          <span class="score-label">Time Taken</span>
+          <span class="score-value">{{ formatTime(submission().timeTaken) }}</span>
+        </div>
+        <div class="score-card">
+          <span class="score-label">Submitted</span>
+          <span class="score-value small">{{ submission().submittedAt | date:'medium' }}</span>
+        </div>
+      </div>
+
+      <!-- Questions -->
+      <h2 class="section-title">Detailed Answers</h2>
+      <div class="questions-list">
+        @for (q of detailedAnswers(); track q.questionId; let i = $index) {
+          <div class="question-card" [class.correct]="q.isCorrect" [class.wrong]="!q.isCorrect">
+            <div class="q-header">
+              <span class="q-number">Q{{ i + 1 }}</span>
+              <span class="q-type-badge">{{ q.type === 'mcq' ? 'MCQ' : 'Single' }}</span>
+              <span class="q-status" [class.correct]="q.isCorrect">{{ q.isCorrect ? '✓ Correct' : '✗ Wrong' }}</span>
+            </div>
+            <p class="q-text">{{ q.question }}</p>
+            <div class="options-grid">
+              @for (opt of q.options; track opt) {
+                <div class="option"
+                     [class.correct-answer]="q.correctAnswers.includes(opt)"
+                     [class.student-answer]="q.studentAnswers.includes(opt)"
+                     [class.wrong-answer]="q.studentAnswers.includes(opt) && !q.correctAnswers.includes(opt)">
+                  <span class="option-marker">
+                    @if (q.correctAnswers.includes(opt)) { ✓ }
+                    @else if (q.studentAnswers.includes(opt)) { ✗ }
+                  </span>
+                  {{ opt }}
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </main>
+</div>

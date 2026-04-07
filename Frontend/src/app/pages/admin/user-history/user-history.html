@@ -1,0 +1,94 @@
+<div class="dashboard-layout">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <span class="logo-icon">📝</span>
+      <h2>QuizMaster</h2>
+      <span class="role-badge">Admin</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a routerLink="/admin/dashboard" class="nav-item"><span class="nav-icon">🏠</span><span>Dashboard</span></a>
+      <a routerLink="/admin/users" class="nav-item active"><span class="nav-icon">👥</span><span>Users</span></a>
+      <a routerLink="/admin/generate-quiz" class="nav-item"><span class="nav-icon">➕</span><span>Generate Quiz</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar">{{ authService.currentUser()?.name?.charAt(0) || 'A' }}</div>
+        <div class="user-details">
+          <span class="user-name">{{ authService.currentUser()?.name }}</span>
+          <span class="user-email">{{ authService.currentUser()?.email }}</span>
+        </div>
+      </div>
+      <button class="logout-btn" (click)="logout()"><span>🚪</span> Logout</button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="breadcrumb">
+      <a routerLink="/admin/users">← Back to Users</a>
+    </div>
+
+    @if (loading()) {
+      <div class="loading-state">
+        <div class="loader"></div>
+        <p>Loading history...</p>
+      </div>
+    } @else {
+      @if (user()) {
+        <div class="student-header">
+          <div class="student-avatar">{{ user().name?.charAt(0) }}</div>
+          <div>
+            <h1>{{ user().name }}</h1>
+            <p>{{ user().email }}</p>
+          </div>
+        </div>
+      }
+
+      <h2 class="section-title">Test History</h2>
+
+      @if (submissions().length === 0) {
+        <div class="empty-state">
+          <span class="empty-icon">📋</span>
+          <h3>No tests taken yet</h3>
+          <p>This student hasn't taken any quizzes.</p>
+        </div>
+      } @else {
+        <div class="history-table-wrap">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>Quiz</th>
+                <th>Score</th>
+                <th>Percentage</th>
+                <th>Time Taken</th>
+                <th>Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (sub of submissions(); track sub._id) {
+                <tr>
+                  <td class="quiz-name">{{ sub.quizId?.title || 'Deleted Quiz' }}</td>
+                  <td><span class="score-badge">{{ sub.score }}/{{ sub.totalMarks }}</span></td>
+                  <td>
+                    <div class="percent-bar">
+                      <div class="percent-fill" [style.width.%]="sub.percentage"
+                           [class.good]="sub.percentage >= 70"
+                           [class.avg]="sub.percentage >= 40 && sub.percentage < 70"
+                           [class.poor]="sub.percentage < 40"></div>
+                    </div>
+                    <span class="percent-text">{{ sub.percentage }}%</span>
+                  </td>
+                  <td>{{ formatTime(sub.timeTaken) }}</td>
+                  <td>{{ sub.submittedAt | date:'medium' }}</td>
+                  <td>
+                    <a [routerLink]="['/admin/submissions', sub._id]" class="view-btn">View Details</a>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+  </main>
+</div>
