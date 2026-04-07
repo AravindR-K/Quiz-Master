@@ -20,7 +20,7 @@ export interface AuthResponse {
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:5000/api/auth';
+  private apiUrl = 'https://quiz-master-b3zl.onrender.com/api/auth';
   
   currentUser = signal<User | null>(null);
   isLoggedIn = signal<boolean>(false);
