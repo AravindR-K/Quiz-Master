@@ -14,7 +14,11 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:4200', // Angular dev server
+  origin: [
+    'http://localhost:4200', 
+    'https://quiz-master-oxo7-4r2hvqr2w-aravind05rk.vercel.app',
+    process.env.FRONTEND_URL
+  ].filter(Boolean),
   credentials: true
 }));
 app.use(express.json());
