@@ -1,6 +1,6 @@
 {
   "buildCommand": "npm run build",
-  "outputDirectory": "dist/quiz-app",
+  "outputDirectory": "dist/quiz-app/browser",
   "routes": [
     {
       "src": "/assets/(.*)",
