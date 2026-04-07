@@ -14,11 +14,18 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: [
-    'http://localhost:4200', 
-    'https://quiz-master-oxo7-4r2hvqr2w-aravind05rk.vercel.app',
-    process.env.FRONTEND_URL
-  ].filter(Boolean),
+  origin: function (origin, callback) {
+    const allowed = [
+      'http://localhost:4200',
+      process.env.FRONTEND_URL
+    ];
+    // Allow any origin that ends with 'vercel.app' or is directly allowed
+    if (!origin || allowed.includes(origin) || origin.endsWith('vercel.app')) {
+      callback(null, true);
+    } else {
+      callback(null, false);
+    }
+  },
   credentials: true
 }));
 app.use(express.json());
