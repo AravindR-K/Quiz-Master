@@ -108,4 +108,4 @@ Contributions, issues, and feature requests are welcome!
 Feel free to check the [issues page](https://github.com/AravindR-K/Quiz-Master/issues) if you want to contribute.
 
 ## 📝 License
-This project is open-source and available under the [GNU GPLv3](LICENSE).
+This project is open-source and available under the [MIT License](LICENSE).
