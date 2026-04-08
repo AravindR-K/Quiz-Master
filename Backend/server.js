@@ -13,21 +13,36 @@ connectDB();
 const app = express();
 
 // Middleware
+const allowedOrigins = [
+  'http://localhost:4200',
+  'http://localhost:3000',
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
 app.use(cors({
   origin: function (origin, callback) {
-    const allowed = [
-      'http://localhost:4200',
-      process.env.FRONTEND_URL
-    ];
-    // Allow any origin that ends with 'vercel.app' or is directly allowed
-    if (!origin || allowed.includes(origin) || origin.endsWith('vercel.app')) {
-      callback(null, true);
-    } else {
-      callback(null, false);
+    // Allow requests with no origin (mobile apps, curl, Postman, server-to-server)
+    if (!origin) return callback(null, true);
+
+    // Allow any vercel.app previews and production deployments
+    if (origin.endsWith('.vercel.app') || origin.includes('vercel.app')) {
+      return callback(null, true);
     }
+
+    // Allow explicitly listed origins
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    // Block everything else
+    console.warn(`CORS blocked origin: ${origin}`);
+    return callback(new Error(`CORS policy: origin ${origin} not allowed`), false);
   },
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
