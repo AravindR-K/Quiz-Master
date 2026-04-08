@@ -1,22 +1,20 @@
 const mongoose = require('mongoose');
 
 const User = require('../models/User');
-const bcrypt = require('bcryptjs');
 
 const createAdmin = async () => {
-  const adminExists = await User.findOne({ email: 'admin@test.com' });
+  const adminExists = await User.findOne({ email: 'admin@quizapp.com' });
 
   if (!adminExists) {
-    const hashedPassword = await bcrypt.hash('admin123', 10);
-
+    // Pass plain password - User model's pre-save hook will hash it
     await User.create({
       name: 'Admin',
-      email: 'admin@test.com',
-      password: hashedPassword,
+      email: 'admin@quizapp.com',
+      password: 'admin123',
       role: 'admin'
     });
 
-    console.log('Default admin created');
+    console.log('Default admin created: admin@quizapp.com / admin123');
   }
 };
 const connectDB = async () => {
