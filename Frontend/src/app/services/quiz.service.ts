@@ -6,8 +6,8 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class QuizService {
-  private adminUrl = 'https://quiz-master-b3zl.onrender.com/api/admin';
-  private studentUrl = 'https://quiz-master-b3zl.onrender.com/api/student';
+  private adminUrl = 'http://localhost:5000/api/admin';
+  private studentUrl = 'http://localhost:5000/api/student';
 
   constructor(private http: HttpClient) {}
 
