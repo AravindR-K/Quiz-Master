@@ -72,9 +72,8 @@ router.post('/login', async (req, res) => {
     // Generate token
     const token = generateToken(user._id);
 
-    // Update login status
-    user.isLoggedIn = true;
-    await user.save();
+    // Update login status using updateOne to bypass the pre('save') password hash hook
+    await User.updateOne({ _id: user._id }, { isLoggedIn: true });
 
     res.json({
       message: 'Login successful',

@@ -9,7 +9,7 @@ const quizSchema = new mongoose.Schema({
   timer: {
     type: Number,
     required: [true, 'Timer is required'],
-    min: 1 // minimum 1 minute
+    min: 1
   },
   totalQuestions: {
     type: Number,
@@ -23,7 +23,29 @@ const quizSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
+  },
+
+  // 🔥 ADD THESE (important)
+  category: {
+    type: String,
+    default: 'General'
+  },
+  assignToAll: {
+    type: Boolean,
+    default: true
+  },
+  assignees: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  difficulty: {
+    type: String,
+    enum: ['Beginner', 'Intermediate', 'Hard']
+  },
+  topic: {
+    type: String
   }
+
 }, {
   timestamps: true
 });

@@ -28,6 +28,7 @@ export class GenerateQuizComponent implements OnInit {
   constructor(public authService: AuthService, private quizService: QuizService) {}
 
   ngOnInit(): void {
+    console.log("Component loaded");
     this.loadQuizzes();
   }
 
