@@ -1,70 +1,125 @@
 import { Routes } from '@angular/router';
-import { adminGuard, studentGuard, guestGuard } from './guards/auth.guard';
+import { adminGuard, hrGuard, candidateGuard, guestGuard } from './guards/auth.guard';
+import { LayoutComponent } from './components/layout/layout';
 
 export const routes: Routes = [
   // Default redirect
   { path: '', redirectTo: '/login', pathMatch: 'full' },
 
-  // Auth routes (guest only)
+  // Auth routes (guest only — no sidebar)
   {
     path: 'login',
-    // canActivate: [guestGuard],
+    canActivate: [guestGuard],
     loadComponent: () => import('./pages/login/login').then(m => m.LoginComponent)
   },
   {
     path: 'register',
-    // canActivate: [guestGuard],
+    canActivate: [guestGuard],
     loadComponent: () => import('./pages/register/register').then(m => m.RegisterComponent)
   },
 
-  // Admin routes
+  // ========== ADMIN ROUTES (with shared layout) ==========
   {
-    path: 'admin/dashboard',
+    path: 'admin',
+    component: LayoutComponent,
     canActivate: [adminGuard],
-    loadComponent: () => import('./pages/admin/dashboard/dashboard').then(m => m.AdminDashboardComponent)
-  },
-  {
-    path: 'admin/users',
-    // canActivate: [adminGuard],
-    loadComponent: () => import('./pages/admin/users/users').then(m => m.AdminUsersComponent)
-  },
-  {
-    path: 'admin/users/:userId/history',
-    // canActivate: [adminGuard],
-    loadComponent: () => import('./pages/admin/user-history/user-history').then(m => m.UserHistoryComponent)
-  },
-  {
-    path: 'admin/submissions/:submissionId',
-    // canActivate: [adminGuard],
-    loadComponent: () => import('./pages/admin/submission-detail/submission-detail').then(m => m.SubmissionDetailComponent)
-  },
-  {
-    path: 'admin/generate-quiz',
-    // canActivate: [adminGuard],
-    loadComponent: () => import('./pages/admin/generate-quiz/generate-quiz').then(m => m.GenerateQuizComponent)
+    children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./pages/admin/dashboard/dashboard').then(m => m.AdminDashboardComponent)
+      },
+      {
+        path: 'users',
+        loadComponent: () => import('./pages/admin/users/users').then(m => m.AdminUsersComponent)
+      },
+      {
+        path: 'users/:userId/history',
+        loadComponent: () => import('./pages/admin/user-history/user-history').then(m => m.UserHistoryComponent)
+      },
+      {
+        path: 'submissions/:submissionId',
+        loadComponent: () => import('./pages/admin/submission-detail/submission-detail').then(m => m.SubmissionDetailComponent)
+      },
+      {
+        path: 'quizzes',
+        loadComponent: () => import('./pages/admin/quizzes/quizzes').then(m => m.AdminQuizzesComponent)
+      },
+      {
+        path: 'create-quiz',
+        loadComponent: () => import('./pages/admin/create-quiz/create-quiz').then(m => m.CreateQuizComponent)
+      },
+      {
+        path: 'quiz/:quizId/edit',
+        loadComponent: () => import('./pages/admin/edit-quiz/edit-quiz').then(m => m.EditQuizComponent)
+      },
+    ]
   },
 
-  // Student routes
+  // ========== HR ROUTES (with shared layout) ==========
   {
-    path: 'student/dashboard',
-    // canActivate: [studentGuard],
-    loadComponent: () => import('./pages/student/dashboard/dashboard').then(m => m.StudentDashboardComponent)
+    path: 'hr',
+    component: LayoutComponent,
+    canActivate: [hrGuard],
+    children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./pages/hr/dashboard/dashboard').then(m => m.HRDashboardComponent)
+      },
+      {
+        path: 'quizzes',
+        loadComponent: () => import('./pages/hr/quizzes/quizzes').then(m => m.HRQuizzesComponent)
+      },
+      {
+        path: 'create-quiz',
+        loadComponent: () => import('./pages/hr/create-quiz/create-quiz').then(m => m.HRCreateQuizComponent)
+      },
+      {
+        path: 'candidates',
+        loadComponent: () => import('./pages/hr/candidates/candidates').then(m => m.HRCandidatesComponent)
+      },
+      {
+        path: 'candidates/:userId/history',
+        loadComponent: () => import('./pages/hr/candidate-history/candidate-history').then(m => m.HRCandidateHistoryComponent)
+      },
+      {
+        path: 'submissions/:submissionId',
+        loadComponent: () => import('./pages/hr/submission-detail/submission-detail').then(m => m.HRSubmissionDetailComponent)
+      },
+    ]
   },
+
+  // ========== CANDIDATE ROUTES (with shared layout) ==========
   {
-    path: 'student/quiz/:quizId',
-    // canActivate: [studentGuard],
-    loadComponent: () => import('./pages/student/take-quiz/take-quiz').then(m => m.TakeQuizComponent)
+    path: 'candidate',
+    component: LayoutComponent,
+    canActivate: [candidateGuard],
+    children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./pages/candidate/dashboard/dashboard').then(m => m.CandidateDashboardComponent)
+      },
+      {
+        path: 'quiz/:quizId',
+        loadComponent: () => import('./pages/candidate/take-quiz/take-quiz').then(m => m.TakeQuizComponent)
+      },
+      {
+        path: 'profile',
+        loadComponent: () => import('./pages/candidate/profile/profile').then(m => m.CandidateProfileComponent)
+      },
+      {
+        path: 'results/:submissionId',
+        loadComponent: () => import('./pages/candidate/results/results').then(m => m.CandidateResultsComponent)
+      },
+    ]
   },
-  {
-    path: 'student/profile',
-    // canActivate: [studentGuard],
-    loadComponent: () => import('./pages/student/profile/profile').then(m => m.StudentProfileComponent)
-  },
-  {
-    path: 'student/results/:submissionId',
-    // canActivate: [studentGuard],
-    loadComponent: () => import('./pages/student/results/results').then(m => m.StudentResultsComponent)
-  },
+
+  // Backward compat: old student routes redirect to candidate
+  { path: 'student', redirectTo: '/candidate', pathMatch: 'prefix' },
+  { path: 'student/dashboard', redirectTo: '/candidate/dashboard' },
+  { path: 'student/profile', redirectTo: '/candidate/profile' },
 
   // Catch-all
   { path: '**', redirectTo: '/login' }

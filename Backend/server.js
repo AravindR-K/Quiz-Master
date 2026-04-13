@@ -50,11 +50,14 @@ app.use(cookieParser());
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/admin', require('./routes/admin'));
-app.use('/api/student', require('./routes/student'));
+app.use('/api/hr', require('./routes/hr'));
+app.use('/api/candidate', require('./routes/candidate'));
+// Keep backward compatibility for old student endpoints
+app.use('/api/student', require('./routes/candidate'));
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'Quiz App API is running' });
+  res.json({ status: 'OK', message: 'QuizMaster Pro API is running' });
 });
 
 // Error handling middleware

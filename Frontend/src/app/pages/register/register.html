@@ -1,97 +1,127 @@
-<div class="auth-container">
-  <div class="auth-bg">
-    <div class="bg-shape shape-1"></div>
-    <div class="bg-shape shape-2"></div>
-    <div class="bg-shape shape-3"></div>
-  </div>
-  
-  <div class="auth-card">
-    <div class="auth-header">
-      <div class="logo">
-        <span class="logo-icon">📝</span>
-        <h1>QuizMaster</h1>
+<div class="auth-page">
+  <!-- Left: Branding Panel -->
+  <div class="auth-brand">
+    <div class="brand-content">
+      <div class="brand-logo">
+        <span class="material-symbols-rounded filled">quiz</span>
+        <span class="brand-name">QuizMaster</span>
       </div>
-      <p class="subtitle">Create your student account</p>
+      <h2 class="brand-headline">Join the<br>Platform.</h2>
+      <p class="brand-desc">Create your candidate account and start taking quizzes assigned to you by your organization.</p>
+      <div class="brand-features">
+        <div class="feature-item">
+          <span class="material-symbols-rounded">speed</span>
+          <span>Timed assessments with instant results</span>
+        </div>
+        <div class="feature-item">
+          <span class="material-symbols-rounded">bar_chart</span>
+          <span>Track your progress over time</span>
+        </div>
+        <div class="feature-item">
+          <span class="material-symbols-rounded">devices</span>
+          <span>Take quizzes from any device</span>
+        </div>
+      </div>
     </div>
+    <div class="brand-footer">© 2026 QuizMaster Pro. All rights reserved.</div>
+  </div>
 
-    @if (error()) {
-      <div class="alert alert-error">
-        <span class="alert-icon">⚠️</span>
-        {{ error() }}
+  <!-- Right: Register Form -->
+  <div class="auth-form-panel">
+    <div class="auth-card">
+      <div class="mobile-logo">
+        <span class="material-symbols-rounded filled">quiz</span>
+        <span>QuizMaster</span>
       </div>
-    }
 
-    <form (ngSubmit)="onSubmit()" class="auth-form">
-      <div class="form-group">
-        <label for="name">Full Name</label>
-        <div class="input-wrapper">
-          <span class="input-icon">👤</span>
-          <input
-            type="text"
-            id="name"
-            [(ngModel)]="name"
-            name="name"
-            placeholder="Enter your full name"
-          />
+      <div class="auth-header">
+        <h1>Create account</h1>
+        <p>Fill in your details to get started</p>
+      </div>
+
+      @if (error()) {
+        <div class="auth-alert error">
+          <span class="material-symbols-rounded">error</span>
+          <span>{{ error() }}</span>
         </div>
-      </div>
+      }
 
-      <div class="form-group">
-        <label for="email">Email Address</label>
-        <div class="input-wrapper">
-          <span class="input-icon">✉️</span>
-          <input
-            type="email"
-            id="email"
-            [(ngModel)]="email"
-            name="email"
-            placeholder="Enter your email"
-            autocomplete="email"
-          />
+      <form (ngSubmit)="onSubmit()" class="auth-form">
+        <div class="field">
+          <label for="name">Full Name</label>
+          <div class="input-group">
+            <span class="material-symbols-rounded input-icon">person</span>
+            <input
+              type="text"
+              id="name"
+              [(ngModel)]="name"
+              name="name"
+              placeholder="John Doe"
+            />
+          </div>
         </div>
-      </div>
 
-      <div class="form-group">
-        <label for="password">Password</label>
-        <div class="input-wrapper">
-          <span class="input-icon">🔒</span>
-          <input
-            type="password"
-            id="password"
-            [(ngModel)]="password"
-            name="password"
-            placeholder="Min. 6 characters"
-            autocomplete="new-password"
-          />
+        <div class="field">
+          <label for="email">Email</label>
+          <div class="input-group">
+            <span class="material-symbols-rounded input-icon">mail</span>
+            <input
+              type="email"
+              id="email"
+              [(ngModel)]="email"
+              name="email"
+              placeholder="you&#64;company.com"
+              autocomplete="email"
+            />
+          </div>
         </div>
-      </div>
 
-      <div class="form-group">
-        <label for="confirmPassword">Confirm Password</label>
-        <div class="input-wrapper">
-          <span class="input-icon">🔒</span>
-          <input
-            type="password"
-            id="confirmPassword"
-            [(ngModel)]="confirmPassword"
-            name="confirmPassword"
-            placeholder="Re-enter your password"
-            autocomplete="new-password"
-          />
+        <div class="fields-row">
+          <div class="field">
+            <label for="password">Password</label>
+            <div class="input-group">
+              <span class="material-symbols-rounded input-icon">lock</span>
+              <input
+                type="password"
+                id="password"
+                [(ngModel)]="password"
+                name="password"
+                placeholder="Min. 6 chars"
+                autocomplete="new-password"
+              />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="confirmPassword">Confirm</label>
+            <div class="input-group">
+              <span class="material-symbols-rounded input-icon">lock</span>
+              <input
+                type="password"
+                id="confirmPassword"
+                [(ngModel)]="confirmPassword"
+                name="confirmPassword"
+                placeholder="Re-enter"
+                autocomplete="new-password"
+              />
+            </div>
+          </div>
         </div>
+
+        <button type="submit" class="submit-btn" [disabled]="loading()">
+          @if (loading()) {
+            <div class="btn-spinner"></div> Creating account...
+          } @else {
+            Create account <span class="material-symbols-rounded">arrow_forward</span>
+          }
+        </button>
+      </form>
+
+      <div class="auth-divider">
+        <span>Already registered?</span>
       </div>
 
-      <button type="submit" class="btn btn-primary" [disabled]="loading()">
-        @if (loading()) {
-          <span class="spinner"></span> Creating Account...
-        } @else {
-          Create Account
-        }
-      </button>
-    </form>
-
-    <div class="auth-footer">
-      <p>Already have an account? <a routerLink="/login">Sign in</a></p>
+      <a routerLink="/login" class="secondary-btn">Sign in instead</a>
     </div>
   </div>
 </div>

@@ -1,0 +1,91 @@
+import { Component, computed, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterLink, RouterLinkActive, RouterOutlet, Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
+import { ThemeService, ThemeMode } from '../../services/theme.service';
+
+interface NavItem {
+  icon: string;
+  label: string;
+  route: string;
+}
+
+@Component({
+  selector: 'app-layout',
+  standalone: true,
+  imports: [CommonModule, RouterLink, RouterLinkActive, RouterOutlet],
+  templateUrl: './layout.html',
+  styleUrl: './layout.css'
+})
+export class LayoutComponent {
+  authService = inject(AuthService);
+  themeService = inject(ThemeService);
+  router = inject(Router);
+
+  showThemeMenu = false;
+  mobileSidebarOpen = false;
+
+  themes: { id: ThemeMode; label: string; icon: string }[] = [
+    { id: 'light', label: 'Light', icon: 'light_mode' },
+    { id: 'dark', label: 'Dark', icon: 'dark_mode' },
+    { id: 'blue', label: 'Navy', icon: 'water' }
+  ];
+
+  navItems = computed<NavItem[]>(() => {
+    const role = this.authService.getUserRole();
+    switch (role) {
+      case 'admin':
+        return [
+          { icon: 'dashboard', label: 'Dashboard', route: '/admin/dashboard' },
+          { icon: 'group', label: 'Users', route: '/admin/users' },
+          { icon: 'quiz', label: 'Quizzes', route: '/admin/quizzes' },
+          { icon: 'add_circle', label: 'Create Quiz', route: '/admin/create-quiz' },
+        ];
+      case 'hr':
+        return [
+          { icon: 'dashboard', label: 'Dashboard', route: '/hr/dashboard' },
+          { icon: 'quiz', label: 'My Quizzes', route: '/hr/quizzes' },
+          { icon: 'add_circle', label: 'Create Quiz', route: '/hr/create-quiz' },
+          { icon: 'people', label: 'Candidates', route: '/hr/candidates' },
+        ];
+      case 'candidate':
+        return [
+          { icon: 'dashboard', label: 'Dashboard', route: '/candidate/dashboard' },
+          { icon: 'person', label: 'Profile', route: '/candidate/profile' },
+        ];
+      default:
+        return [];
+    }
+  });
+
+  roleBadge = computed(() => {
+    const role = this.authService.getUserRole();
+    switch (role) {
+      case 'admin': return { label: 'Admin', class: 'role-admin' };
+      case 'hr': return { label: 'HR', class: 'role-hr' };
+      case 'candidate': return { label: 'Candidate', class: 'role-candidate' };
+      default: return { label: '', class: '' };
+    }
+  });
+
+  userInitial = computed(() => {
+    return this.authService.currentUser()?.name?.charAt(0)?.toUpperCase() || '?';
+  });
+
+  setTheme(theme: ThemeMode): void {
+    this.themeService.setTheme(theme);
+    this.showThemeMenu = false;
+  }
+
+  toggleThemeMenu(): void {
+    this.showThemeMenu = !this.showThemeMenu;
+  }
+
+  toggleMobileSidebar(): void {
+    this.mobileSidebarOpen = !this.mobileSidebarOpen;
+  }
+
+  logout(): void {
+    this.authService.logout();
+  }
+}

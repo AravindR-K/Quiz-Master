@@ -1,0 +1,69 @@
+<div class="page-container animate-fade-in">
+  <div class="page-header">
+    <div>
+      <h1>Quizzes</h1>
+      <p class="page-subtitle">Manage all quizzes in the system</p>
+    </div>
+    <a routerLink="/admin/create-quiz" class="btn btn-primary">
+      <span class="material-symbols-rounded">add</span> Create Quiz
+    </a>
+  </div>
+
+  @if (error()) {
+    <div class="alert alert-error">
+      <span class="material-symbols-rounded">error</span> {{ error() }}
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="loading-center">
+      <div class="spinner spinner-lg"></div>
+      <p>Loading quizzes...</p>
+    </div>
+  } @else if (quizzes().length === 0) {
+    <div class="empty-state">
+      <span class="material-symbols-rounded">quiz</span>
+      <h3>No quizzes yet</h3>
+      <p>Create your first quiz to get started.</p>
+      <a routerLink="/admin/create-quiz" class="btn btn-primary" style="margin-top: 16px;">Create Quiz</a>
+    </div>
+  } @else {
+    <div class="quiz-grid stagger-children">
+      @for (quiz of quizzes(); track quiz._id) {
+        <div class="card card-hover quiz-card">
+          <div class="quiz-card-header">
+            <h3 class="quiz-title">{{ quiz.title }}</h3>
+            <span class="badge" [ngClass]="getDifficultyClass(quiz.difficulty)">
+              {{ quiz.difficulty || 'General' }}
+            </span>
+          </div>
+          <div class="quiz-meta">
+            <div class="meta-item">
+              <span class="material-symbols-rounded">help</span>
+              {{ quiz.totalQuestions }} questions
+            </div>
+            <div class="meta-item">
+              <span class="material-symbols-rounded">timer</span>
+              {{ quiz.timer }} min
+            </div>
+            <div class="meta-item">
+              <span class="material-symbols-rounded">category</span>
+              {{ quiz.category || 'Uncategorized' }}
+            </div>
+          </div>
+          @if (quiz.topic) {
+            <div class="quiz-topic">{{ quiz.topic }}</div>
+          }
+          <div class="quiz-card-actions">
+            <a [routerLink]="['/admin/quiz', quiz._id, 'edit']" class="btn btn-outline btn-sm">
+              <span class="material-symbols-rounded">edit</span> Edit
+            </a>
+            <button class="btn btn-danger btn-sm" (click)="deleteQuiz(quiz._id)">
+              <span class="material-symbols-rounded">delete</span> Delete
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

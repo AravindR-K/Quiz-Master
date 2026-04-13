@@ -29,13 +29,9 @@ export class LoginComponent {
     this.error.set('');
 
     this.authService.login(this.email, this.password).subscribe({
-      next: (res) => {
+      next: () => {
         this.loading.set(false);
-        if (res.user.role === 'admin') {
-          this.router.navigate(['/admin/dashboard']);
-        } else {
-          this.router.navigate(['/student/dashboard']);
-        }
+        this.router.navigate([this.authService.getDashboardRoute()]);
       },
       error: (err) => {
         this.loading.set(false);

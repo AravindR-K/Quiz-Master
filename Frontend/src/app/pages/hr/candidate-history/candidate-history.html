@@ -1,0 +1,64 @@
+<div class="page-container animate-fade-in">
+  <a routerLink="/hr/candidates" class="back-link">
+    <span class="material-symbols-rounded">arrow_back</span> Back to Candidates
+  </a>
+
+  @if (loading()) {
+    <div class="loading-center"><div class="spinner spinner-lg"></div><p>Loading history...</p></div>
+  } @else {
+    @if (user()) {
+      <div class="user-header">
+        <div class="user-avatar">{{ user().name?.charAt(0)?.toUpperCase() }}</div>
+        <div>
+          <h1>{{ user().name }}</h1>
+          <p class="user-email">{{ user().email }}</p>
+        </div>
+      </div>
+    }
+
+    <h2 class="section-title">Quiz History</h2>
+
+    @if (submissions().length === 0) {
+      <div class="empty-state">
+        <span class="material-symbols-rounded">assignment</span>
+        <h3>No quizzes taken</h3>
+        <p>This candidate hasn't taken any quizzes yet.</p>
+      </div>
+    } @else {
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Quiz</th>
+              <th>Score</th>
+              <th>Percentage</th>
+              <th>Time</th>
+              <th>Date</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (sub of submissions(); track sub._id) {
+              <tr>
+                <td><strong>{{ sub.quizId?.title || 'Deleted Quiz' }}</strong></td>
+                <td><span class="badge badge-primary">{{ sub.score }}/{{ sub.totalMarks }}</span></td>
+                <td>
+                  <div class="percent-bar">
+                    <div class="percent-fill" [style.width.%]="sub.percentage"
+                         [class.good]="sub.percentage >= 70"
+                         [class.avg]="sub.percentage >= 40 && sub.percentage < 70"
+                         [class.poor]="sub.percentage < 40"></div>
+                  </div>
+                  <span class="percent-text">{{ sub.percentage }}%</span>
+                </td>
+                <td>{{ formatTime(sub.timeTaken) }}</td>
+                <td>{{ sub.submittedAt | date:'mediumDate' }}</td>
+                <td><a [routerLink]="['/hr/submissions', sub._id]" class="btn btn-outline btn-sm">View</a></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+</div>

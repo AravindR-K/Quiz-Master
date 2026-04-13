@@ -24,28 +24,36 @@ const quizSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
-
-  // 🔥 ADD THESE (important)
   category: {
     type: String,
-    default: 'General'
+    default: 'General',
+    trim: true
   },
   assignToAll: {
     type: Boolean,
-    default: true
+    default: false
   },
   assignees: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   }],
+  assignedGroups: [{
+    type: String,
+    trim: true
+  }],
   difficulty: {
     type: String,
-    enum: ['Beginner', 'Intermediate', 'Hard']
+    enum: ['Beginner', 'Intermediate', 'Advanced'],
+    default: 'Intermediate'
   },
   topic: {
-    type: String
+    type: String,
+    trim: true
+  },
+  generatedByAI: {
+    type: Boolean,
+    default: false
   }
-
 }, {
   timestamps: true
 });

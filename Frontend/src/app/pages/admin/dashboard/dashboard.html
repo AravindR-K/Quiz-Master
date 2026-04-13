@@ -1,68 +1,142 @@
-<div class="dashboard-layout">
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <span class="logo-icon">📝</span>
-      <h2>QuizMaster</h2>
-      <span class="role-badge">Admin</span>
+<!-- Admin Dashboard -->
+<div class="page animate-fade-in">
+  <div class="page-header">
+    <div>
+      <h1>Dashboard</h1>
+      <p class="page-subtitle">Overview of your assessment platform</p>
     </div>
-    <nav class="sidebar-nav">
-      <a routerLink="/admin/dashboard" class="nav-item active">
-        <span class="nav-icon">🏠</span>
-        <span>Dashboard</span>
-      </a>
-      <a routerLink="/admin/users" class="nav-item">
-        <span class="nav-icon">👥</span>
-        <span>Users</span>
-      </a>
-      <a routerLink="/admin/generate-quiz" class="nav-item">
-        <span class="nav-icon">➕</span>
-        <span>Generate Quiz</span>
-      </a>
-    </nav>
-    <div class="sidebar-footer">
-      <div class="user-info">
-        <div class="user-avatar">{{ authService.currentUser()?.name?.charAt(0) || 'A' }}</div>
-        <div class="user-details">
-          <span class="user-name">{{ authService.currentUser()?.name }}</span>
-          <span class="user-email">{{ authService.currentUser()?.email }}</span>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-center">
+      <div class="spinner spinner-lg"></div>
+      <p class="loading-text">Loading statistics...</p>
+    </div>
+  } @else if (stats()) {
+    <!-- Stats Cards -->
+    <div class="stats-grid stagger-children">
+      <div class="stat-card">
+        <div class="stat-icon-wrap blue">
+          <span class="material-symbols-rounded">group</span>
+        </div>
+        <div class="stat-body">
+          <span class="stat-value">{{ stats().totalUsers }}</span>
+          <span class="stat-label">Candidates</span>
         </div>
       </div>
-      <button class="logout-btn" (click)="logout()">
-        <span>🚪</span> Logout
-      </button>
-    </div>
-  </aside>
 
-  <!-- Main Content -->
-  <main class="main-content">
-    <div class="page-header">
-      <h1>Admin Dashboard</h1>
-      <p>Manage quizzes and monitor student activity</p>
+      <div class="stat-card">
+        <div class="stat-icon-wrap purple">
+          <span class="material-symbols-rounded">badge</span>
+        </div>
+        <div class="stat-body">
+          <span class="stat-value">{{ stats().totalHR }}</span>
+          <span class="stat-label">HR Users</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon-wrap green">
+          <span class="material-symbols-rounded">quiz</span>
+        </div>
+        <div class="stat-body">
+          <span class="stat-value">{{ stats().totalQuizzes }}</span>
+          <span class="stat-label">Quizzes</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon-wrap orange">
+          <span class="material-symbols-rounded">assignment_turned_in</span>
+        </div>
+        <div class="stat-body">
+          <span class="stat-value">{{ stats().totalSubmissions }}</span>
+          <span class="stat-label">Submissions</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon-wrap teal">
+          <span class="material-symbols-rounded">circle</span>
+        </div>
+        <div class="stat-body">
+          <span class="stat-value">{{ stats().onlineUsers }}</span>
+          <span class="stat-label">Online Now</span>
+        </div>
+      </div>
     </div>
 
-    <div class="dashboard-cards">
-      <a routerLink="/admin/users" class="dash-card card-users">
-        <div class="card-icon-wrap">
-          <span class="card-icon">👥</span>
-        </div>
-        <div class="card-content">
-          <h3>Users</h3>
-          <p>View registered students, check who's logged in, and review their test history</p>
-        </div>
-        <div class="card-arrow">→</div>
-      </a>
+    <!-- Quick Actions -->
+    <div class="section">
+      <h2 class="section-title">Quick Actions</h2>
+      <div class="actions-grid">
+        <a routerLink="/admin/users" class="action-card card card-hover card-padding">
+          <span class="material-symbols-rounded action-icon">group</span>
+          <div class="action-info">
+            <h3>Manage Users</h3>
+            <p>View candidates, HR users, and online status</p>
+          </div>
+          <span class="material-symbols-rounded action-arrow">arrow_forward</span>
+        </a>
 
-      <a routerLink="/admin/generate-quiz" class="dash-card card-quiz">
-        <div class="card-icon-wrap">
-          <span class="card-icon">📋</span>
-        </div>
-        <div class="card-content">
-          <h3>Generate Quiz</h3>
-          <p>Create a new quiz by uploading questions from an Excel file with timer settings</p>
-        </div>
-        <div class="card-arrow">→</div>
-      </a>
+        <a routerLink="/admin/quizzes" class="action-card card card-hover card-padding">
+          <span class="material-symbols-rounded action-icon">quiz</span>
+          <div class="action-info">
+            <h3>Manage Quizzes</h3>
+            <p>View, edit, assign, and delete quizzes</p>
+          </div>
+          <span class="material-symbols-rounded action-arrow">arrow_forward</span>
+        </a>
+
+        <a routerLink="/admin/create-quiz" class="action-card card card-hover card-padding">
+          <span class="material-symbols-rounded action-icon">add_circle</span>
+          <div class="action-info">
+            <h3>Create Quiz</h3>
+            <p>Upload Excel or generate with AI</p>
+          </div>
+          <span class="material-symbols-rounded action-arrow">arrow_forward</span>
+        </a>
+      </div>
     </div>
-  </main>
+
+    <!-- Recent Submissions -->
+    @if (recentSubmissions().length > 0) {
+      <div class="section">
+        <h2 class="section-title">Recent Submissions</h2>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Candidate</th>
+                <th>Quiz</th>
+                <th>Score</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (sub of recentSubmissions(); track sub._id) {
+                <tr>
+                  <td>
+                    <div class="user-cell">
+                      <span class="user-cell-name">{{ sub.studentId?.name }}</span>
+                      <span class="user-cell-email">{{ sub.studentId?.email }}</span>
+                    </div>
+                  </td>
+                  <td>{{ sub.quizId?.title }}</td>
+                  <td>
+                    <span class="badge" [ngClass]="{
+                      'badge-success': sub.percentage >= 70,
+                      'badge-warning': sub.percentage >= 40 && sub.percentage < 70,
+                      'badge-danger': sub.percentage < 40
+                    }">{{ sub.percentage }}%</span>
+                  </td>
+                  <td class="text-muted">{{ sub.submittedAt | date:'short' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  }
 </div>

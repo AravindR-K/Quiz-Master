@@ -1,0 +1,19 @@
+<div class="page animate-fade-in">
+  <div class="page-header"><h1>HR Dashboard</h1><p class="page-subtitle">Manage quizzes and review candidates</p></div>
+  @if (loading()) { <div class="loading-center"><div class="spinner spinner-lg"></div></div> }
+  @else if (stats()) {
+    <div class="stats-grid stagger-children">
+      <div class="stat-card card card-padding"><span class="material-symbols-rounded stat-ic blue">quiz</span><div class="stat-body"><span class="stat-value">{{ stats().myQuizzes }}</span><span class="stat-label">My Quizzes</span></div></div>
+      <div class="stat-card card card-padding"><span class="material-symbols-rounded stat-ic green">people</span><div class="stat-body"><span class="stat-value">{{ stats().totalCandidates }}</span><span class="stat-label">Candidates</span></div></div>
+      <div class="stat-card card card-padding"><span class="material-symbols-rounded stat-ic orange">assignment_turned_in</span><div class="stat-body"><span class="stat-value">{{ stats().totalSubmissions }}</span><span class="stat-label">Submissions</span></div></div>
+    </div>
+    <div class="actions-grid">
+      <a routerLink="/hr/quizzes" class="action-card card card-hover card-padding">
+        <span class="material-symbols-rounded action-icon">quiz</span><div class="action-info"><h3>My Quizzes</h3><p>View and manage your quizzes</p></div><span class="material-symbols-rounded arrow">arrow_forward</span></a>
+      <a routerLink="/hr/create-quiz" class="action-card card card-hover card-padding">
+        <span class="material-symbols-rounded action-icon">add_circle</span><div class="action-info"><h3>Create Quiz</h3><p>Upload or generate new assessments</p></div><span class="material-symbols-rounded arrow">arrow_forward</span></a>
+      <a routerLink="/hr/candidates" class="action-card card card-hover card-padding">
+        <span class="material-symbols-rounded action-icon">people</span><div class="action-info"><h3>Candidates</h3><p>View candidate results and history</p></div><span class="material-symbols-rounded arrow">arrow_forward</span></a>
+    </div>
+  }
+</div>

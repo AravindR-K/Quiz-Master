@@ -1,0 +1,85 @@
+<!-- Candidate Dashboard -->
+<div class="page animate-fade-in">
+  <div class="page-header">
+    <div>
+      <h1>Welcome, {{ authService.currentUser()?.name }}!</h1>
+      <p class="page-subtitle">Your assigned quizzes are listed below</p>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-center">
+      <div class="spinner spinner-lg"></div>
+      <p class="loading-text">Loading quizzes...</p>
+    </div>
+  } @else if (quizzes().length === 0) {
+    <div class="empty-state">
+      <span class="material-symbols-rounded">assignment</span>
+      <h3>No quizzes assigned</h3>
+      <p>Check back later for new assessments</p>
+    </div>
+  } @else {
+    <div class="quiz-grid stagger-children">
+      @for (quiz of quizzes(); track quiz.id) {
+        <div class="quiz-card card" [class.taken]="quiz.taken">
+          <div class="quiz-card-header">
+            <div class="quiz-icon-wrap" [class.completed]="quiz.taken">
+              <span class="material-symbols-rounded">{{ quiz.taken ? 'check_circle' : 'quiz' }}</span>
+            </div>
+            <div class="quiz-meta">
+              @if (quiz.category) {
+                <span class="badge badge-primary">{{ quiz.category }}</span>
+              }
+              @if (quiz.difficulty) {
+                <span class="badge" [ngClass]="{
+                  'badge-success': quiz.difficulty === 'Beginner',
+                  'badge-warning': quiz.difficulty === 'Intermediate',
+                  'badge-danger': quiz.difficulty === 'Advanced'
+                }">{{ quiz.difficulty }}</span>
+              }
+            </div>
+          </div>
+          <h3 class="quiz-title">{{ quiz.title }}</h3>
+          <div class="quiz-details">
+            <span class="quiz-detail">
+              <span class="material-symbols-rounded">timer</span>
+              {{ quiz.timer }} min
+            </span>
+            <span class="quiz-detail">
+              <span class="material-symbols-rounded">help</span>
+              {{ quiz.totalQuestions }} questions
+            </span>
+          </div>
+
+          @if (quiz.taken) {
+            <div class="quiz-result">
+              <div class="result-bar-track">
+                <div class="result-bar-fill"
+                     [style.width.%]="quiz.percentage"
+                     [ngClass]="{
+                       'fill-good': quiz.percentage >= 70,
+                       'fill-avg': quiz.percentage >= 40 && quiz.percentage < 70,
+                       'fill-poor': quiz.percentage < 40
+                     }"></div>
+              </div>
+              <span class="result-score">Score: {{ quiz.score }}/{{ quiz.totalMarks }} ({{ quiz.percentage }}%)</span>
+            </div>
+            <div class="quiz-card-footer">
+              <span class="badge badge-success">
+                <span class="material-symbols-rounded" style="font-size: 14px">check</span>
+                Completed
+              </span>
+            </div>
+          } @else {
+            <div class="quiz-card-footer">
+              <a [routerLink]="['/candidate/quiz', quiz.id]" class="btn btn-primary btn-sm">
+                Start Quiz
+                <span class="material-symbols-rounded" style="font-size: 16px">arrow_forward</span>
+              </a>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

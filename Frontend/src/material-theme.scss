@@ -1,0 +1,52 @@
+@use '@angular/material' as mat;
+
+@include mat.core();
+
+// 🔵 Azure Theme (default)
+$azure-theme: mat.define-theme((
+  color: (
+    theme-type: light,
+    primary: mat.$azure-palette,
+  )
+));
+
+// 🟣 Magenta Theme
+$magenta-theme: mat.define-theme((
+  color: (
+    theme-type: light,
+    primary: mat.$magenta-palette,
+  )
+));
+
+// 🟢 Cyan Theme
+$cyan-theme: mat.define-theme((
+  color: (
+    theme-type: light,
+    primary: mat.$cyan-palette,
+  )
+));
+
+// 🔴 Rose Theme
+$rose-theme: mat.define-theme((
+  color: (
+    theme-type: light,
+    primary: mat.$rose-palette,
+  )
+));
+
+// Apply themes via classes
+.azure-theme {
+  @include mat.all-component-themes($azure-theme);
+}
+
+.magenta-theme {
+  @include mat.all-component-themes($magenta-theme);
+}
+
+.cyan-theme {
+  @include mat.all-component-themes($cyan-theme);
+}
+
+.rose-theme {
+  @include mat.all-component-themes($rose-theme);
+}

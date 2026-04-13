@@ -7,7 +7,8 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'student';
+  role: 'admin' | 'hr' | 'candidate';
+  group?: string;
 }
 
 export interface AuthResponse {
@@ -82,5 +83,15 @@ export class AuthService {
 
   getUserRole(): string | null {
     return this.currentUser()?.role || null;
+  }
+
+  getDashboardRoute(): string {
+    const role = this.getUserRole();
+    switch (role) {
+      case 'admin': return '/admin/dashboard';
+      case 'hr': return '/hr/dashboard';
+      case 'candidate': return '/candidate/dashboard';
+      default: return '/login';
+    }
   }
 }

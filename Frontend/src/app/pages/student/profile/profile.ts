@@ -23,8 +23,8 @@ export class StudentProfileComponent implements OnInit {
   }
 
   loadProfile(): void {
-    this.quizService.getStudentProfile().subscribe({
-      next: (res) => {
+    this.quizService.getCandidateProfile().subscribe({
+      next: (res: any) => {
         this.user.set(res.user);
         this.submissions.set(res.submissions);
         this.loading.set(false);

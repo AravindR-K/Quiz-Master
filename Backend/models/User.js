@@ -21,8 +21,13 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['admin', 'student'],
-    default: 'student'
+    enum: ['admin', 'hr', 'candidate'],
+    default: 'candidate'
+  },
+  group: {
+    type: String,
+    default: 'General',
+    trim: true
   },
   isLoggedIn: {
     type: Boolean,

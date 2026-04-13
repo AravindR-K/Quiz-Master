@@ -1,0 +1,56 @@
+<div class="page-container animate-fade-in">
+  <div class="page-header">
+    <div>
+      <h1>My Quizzes</h1>
+      <p class="page-subtitle">Manage quizzes you've created</p>
+    </div>
+    <a routerLink="/hr/create-quiz" class="btn btn-primary">
+      <span class="material-symbols-rounded">add</span> Create Quiz
+    </a>
+  </div>
+
+  @if (error()) {
+    <div class="alert alert-error"><span class="material-symbols-rounded">error</span> {{ error() }}</div>
+  }
+
+  @if (loading()) {
+    <div class="loading-center"><div class="spinner spinner-lg"></div><p>Loading quizzes...</p></div>
+  } @else if (quizzes().length === 0) {
+    <div class="empty-state">
+      <span class="material-symbols-rounded">quiz</span>
+      <h3>No quizzes yet</h3>
+      <p>Create your first quiz to get started.</p>
+    </div>
+  } @else {
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Questions</th>
+            <th>Timer</th>
+            <th>Category</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (quiz of quizzes(); track quiz._id) {
+            <tr>
+              <td><strong>{{ quiz.title }}</strong></td>
+              <td>{{ quiz.totalQuestions }}</td>
+              <td>{{ quiz.timer }} min</td>
+              <td>{{ quiz.category || '—' }}</td>
+              <td>{{ quiz.createdAt | date:'mediumDate' }}</td>
+              <td>
+                <button class="btn btn-danger btn-sm" (click)="deleteQuiz(quiz._id)">
+                  <span class="material-symbols-rounded">delete</span>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

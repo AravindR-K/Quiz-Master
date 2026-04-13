@@ -1,0 +1,78 @@
+<!-- Take Quiz -->
+<div class="quiz-page">
+  @if (loading()) {
+    <div class="loading-center"><div class="spinner spinner-lg"></div><p class="loading-text">Loading quiz...</p></div>
+  } @else if (error() && !quiz()) {
+    <div class="error-state">
+      <span class="material-symbols-rounded" style="font-size:48px;color:var(--danger)">error</span>
+      <h2>{{ error() }}</h2>
+      <a routerLink="/candidate/dashboard" class="btn btn-outline">Back to Dashboard</a>
+    </div>
+  } @else if (submitted()) {
+    <div class="success-state animate-scale-in">
+      <span class="material-symbols-rounded" style="font-size:64px;color:var(--success)">check_circle</span>
+      <h2>Quiz Submitted!</h2>
+      <p>Redirecting to dashboard...</p>
+    </div>
+  } @else if (quiz() && currentQuestion()) {
+    <!-- Quiz Header -->
+    <div class="quiz-header">
+      <div class="quiz-title-area">
+        <h1>{{ quiz().title }}</h1>
+        <span class="q-counter">Question {{ currentIndex() + 1 }} of {{ questions().length }}</span>
+      </div>
+      <div class="timer" [class.warning]="timeLeft() < 300 && timeLeft() >= 60" [class.danger]="timeLeft() < 60">
+        <span class="material-symbols-rounded">timer</span>
+        <span class="timer-value">{{ formattedTime() }}</span>
+      </div>
+    </div>
+
+    <!-- Progress -->
+    <div class="progress-track"><div class="progress-fill" [style.width.%]="progress()"></div></div>
+
+    @if (error()) { <div class="alert alert-error" style="margin-bottom:16px"><span class="material-symbols-rounded">error</span>{{ error() }}</div> }
+
+    <!-- Question Card -->
+    <div class="question-card card card-padding animate-fade-in">
+      <div class="q-header">
+        <span class="q-badge">Q{{ currentIndex() + 1 }}</span>
+        <span class="q-type badge badge-primary">{{ currentQuestion().type === 'mcq' ? 'Multiple Correct' : 'Single Correct' }}</span>
+      </div>
+      <p class="q-text">{{ currentQuestion().question }}</p>
+      <div class="options-list">
+        @for (option of currentQuestion().options; track option; let i = $index) {
+          <button class="option-btn"
+                  [class.selected]="isSelected(currentQuestion()._id, option)"
+                  (click)="selectOption(currentQuestion()._id, option, currentQuestion().type)">
+            <span class="option-letter">{{ 'ABCD'[i] }}</span>
+            <span class="option-text">{{ option }}</span>
+            @if (isSelected(currentQuestion()._id, option)) {
+              <span class="material-symbols-rounded check-icon">check_circle</span>
+            }
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="quiz-nav">
+      <button class="btn btn-outline" (click)="prev()" [disabled]="currentIndex() === 0">
+        <span class="material-symbols-rounded">arrow_back</span> Previous
+      </button>
+
+      <div class="question-dots">
+        @for (q of questions(); track q._id; let i = $index) {
+          <button class="dot" [class.active]="i === currentIndex()" [class.answered]="isAnswered(i)" (click)="goTo(i)">{{ i + 1 }}</button>
+        }
+      </div>
+
+      @if (currentIndex() < questions().length - 1) {
+        <button class="btn btn-primary" (click)="next()">Next <span class="material-symbols-rounded">arrow_forward</span></button>
+      } @else {
+        <button class="btn btn-primary" style="background:var(--success)" (click)="submitQuiz()" [disabled]="submitting()">
+          @if (submitting()) { <div class="spinner"></div> } @else { Submit }
+        </button>
+      }
+    </div>
+  }
+</div>

@@ -2,7 +2,8 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
-export const authGuard: CanActivateFn = (route, state) => {
+// Generic auth guard - just checks if logged in
+export const authGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
@@ -13,7 +14,8 @@ export const authGuard: CanActivateFn = (route, state) => {
   return true;
 };
 
-export const adminGuard: CanActivateFn = (route, state) => {
+// Admin only
+export const adminGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
@@ -23,14 +25,15 @@ export const adminGuard: CanActivateFn = (route, state) => {
   }
 
   if (authService.getUserRole() !== 'admin') {
-    router.navigate(['/student/dashboard']);
+    router.navigate([authService.getDashboardRoute()]);
     return false;
   }
 
   return true;
 };
 
-export const studentGuard: CanActivateFn = (route, state) => {
+// HR only
+export const hrGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
@@ -39,25 +42,58 @@ export const studentGuard: CanActivateFn = (route, state) => {
     return false;
   }
 
-  if (authService.getUserRole() !== 'student') {
-    router.navigate(['/admin/dashboard']);
+  if (authService.getUserRole() !== 'hr') {
+    router.navigate([authService.getDashboardRoute()]);
     return false;
   }
 
   return true;
 };
 
-export const guestGuard: CanActivateFn = (route, state) => {
+// Candidate only
+export const candidateGuard: CanActivateFn = () => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  if (!authService.isLoggedIn()) {
+    router.navigate(['/login']);
+    return false;
+  }
+
+  if (authService.getUserRole() !== 'candidate') {
+    router.navigate([authService.getDashboardRoute()]);
+    return false;
+  }
+
+  return true;
+};
+
+// Admin or HR
+export const adminOrHrGuard: CanActivateFn = () => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  if (!authService.isLoggedIn()) {
+    router.navigate(['/login']);
+    return false;
+  }
+
+  const role = authService.getUserRole();
+  if (role !== 'admin' && role !== 'hr') {
+    router.navigate([authService.getDashboardRoute()]);
+    return false;
+  }
+
+  return true;
+};
+
+// Guest only (redirect logged-in users to their dashboard)
+export const guestGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
   if (authService.isLoggedIn()) {
-    const role = authService.getUserRole();
-    if (role === 'admin') {
-      router.navigate(['/admin/dashboard']);
-    } else {
-      router.navigate(['/student/dashboard']);
-    }
+    router.navigate([authService.getDashboardRoute()]);
     return false;
   }
 

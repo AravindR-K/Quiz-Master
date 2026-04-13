@@ -12,7 +12,7 @@ const generateToken = (id) => {
 };
 
 // @route   POST /api/auth/register
-// @desc    Register a new student
+// @desc    Register a new candidate
 // @access  Public
 router.post('/register', async (req, res) => {
   try {
@@ -29,8 +29,8 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ message: 'User with this email already exists' });
     }
 
-    // Create user (role defaults to 'student')
-    const user = await User.create({ name, email, password, role: 'student' });
+    // Create user (role defaults to 'candidate')
+    const user = await User.create({ name, email, password, role: 'candidate' });
 
     res.status(201).json({
       message: 'Registration successful',
@@ -47,7 +47,7 @@ router.post('/register', async (req, res) => {
 });
 
 // @route   POST /api/auth/login
-// @desc    Login user (admin or student)
+// @desc    Login user (admin, hr, or candidate)
 // @access  Public
 router.post('/login', async (req, res) => {
   try {
@@ -82,7 +82,8 @@ router.post('/login', async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        group: user.group
       }
     });
   } catch (error) {
@@ -95,8 +96,7 @@ router.post('/login', async (req, res) => {
 // @access  Private
 router.post('/logout', protect, async (req, res) => {
   try {
-    req.user.isLoggedIn = false;
-    await req.user.save();
+    await User.updateOne({ _id: req.user._id }, { isLoggedIn: false });
     res.json({ message: 'Logout successful' });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });

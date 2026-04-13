@@ -1,0 +1,49 @@
+<div class="page animate-fade-in">
+  @if (loading()) {
+    <div class="loading-center"><div class="spinner spinner-lg"></div></div>
+  } @else if (quizInfo()) {
+    <a routerLink="/candidate/profile" class="back-link"><span class="material-symbols-rounded">arrow_back</span> Back to Profile</a>
+
+    <div class="results-header card card-padding">
+      <h1>{{ quizInfo().title }}</h1>
+      <div class="result-summary">
+        <div class="big-score" [ngClass]="{ 'good': percentage() >= 70, 'avg': percentage() >= 40 && percentage() < 70, 'poor': percentage() < 40 }">
+          {{ percentage() }}%
+        </div>
+        <div class="score-meta">
+          <span><span class="material-symbols-rounded">check_circle</span> {{ score() }}/{{ totalMarks() }} correct</span>
+          <span><span class="material-symbols-rounded">timer</span> {{ formatTime(timeTaken()) }}</span>
+          <span><span class="material-symbols-rounded">calendar_today</span> {{ submittedAt() | date:'medium' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="section-title">Answer Review</h2>
+    <div class="answers-list stagger-children">
+      @for (r of detailedResults(); track $index; let i = $index) {
+        <div class="answer-card card card-padding" [class.correct]="r.isCorrect" [class.wrong]="!r.isCorrect">
+          <div class="answer-header">
+            <span class="q-num">Q{{ i + 1 }}</span>
+            <span class="badge" [ngClass]="r.isCorrect ? 'badge-success' : 'badge-danger'">
+              {{ r.isCorrect ? 'Correct' : 'Incorrect' }}
+            </span>
+          </div>
+          <p class="q-text">{{ r.question }}</p>
+          <div class="options-review">
+            @for (opt of r.options; track opt) {
+              <div class="opt-row"
+                   [class.is-correct]="r.correctAnswers.includes(opt)"
+                   [class.is-wrong]="r.studentAnswers.includes(opt) && !r.correctAnswers.includes(opt)"
+                   [class.is-selected]="r.studentAnswers.includes(opt)">
+                <span class="material-symbols-rounded opt-icon">
+                  {{ r.correctAnswers.includes(opt) ? 'check_circle' : (r.studentAnswers.includes(opt) ? 'cancel' : 'radio_button_unchecked') }}
+                </span>
+                <span>{{ opt }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

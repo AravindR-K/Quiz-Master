@@ -1,0 +1,50 @@
+<div class="page-container animate-fade-in">
+  <a routerLink="/hr/candidates" class="back-link">
+    <span class="material-symbols-rounded">arrow_back</span> Back to Candidates
+  </a>
+
+  @if (loading()) {
+    <div class="loading-center"><div class="spinner spinner-lg"></div><p>Loading submission...</p></div>
+  } @else if (submission()) {
+    <div class="submission-header card card-padding">
+      <div class="header-row">
+        <div>
+          <h1>{{ submission().quizId?.title || 'Quiz' }}</h1>
+          <p class="sub-info">{{ submission().studentId?.name }} • {{ submission().studentId?.email }}</p>
+        </div>
+        <div class="score-display">
+          <span class="score-value">{{ submission().score }}/{{ submission().totalMarks }}</span>
+          <span class="score-percent" [class.good]="submission().percentage >= 70"
+                [class.avg]="submission().percentage >= 40 && submission().percentage < 70"
+                [class.poor]="submission().percentage < 40">{{ submission().percentage }}%</span>
+        </div>
+      </div>
+      <div class="meta-row">
+        <span><span class="material-symbols-rounded">timer</span> {{ formatTime(submission().timeTaken) }}</span>
+        <span><span class="material-symbols-rounded">calendar_today</span> {{ submission().submittedAt | date:'medium' }}</span>
+      </div>
+    </div>
+
+    <h2 class="section-title">Answers</h2>
+
+    @for (ans of detailedAnswers(); track $index; let i = $index) {
+      <div class="card card-padding answer-card" [class.correct]="ans.isCorrect" [class.wrong]="!ans.isCorrect">
+        <div class="answer-header">
+          <span class="q-num">Q{{ i + 1 }}</span>
+          <span class="material-symbols-rounded result-icon">{{ ans.isCorrect ? 'check_circle' : 'cancel' }}</span>
+        </div>
+        <p class="question-text">{{ ans.question }}</p>
+        <div class="answer-details">
+          <div class="answer-row">
+            <span class="answer-label">Student's Answer:</span>
+            <span class="answer-value" [class.wrong-text]="!ans.isCorrect">{{ ans.studentAnswer || '—' }}</span>
+          </div>
+          <div class="answer-row">
+            <span class="answer-label">Correct Answer:</span>
+            <span class="answer-value correct-text">{{ ans.correctAnswer }}</span>
+          </div>
+        </div>
+      </div>
+    }
+  }
+</div>
