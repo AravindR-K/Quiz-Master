@@ -48,6 +48,59 @@
       </div>
 
       <div class="form-group">
+        <label class="form-label">Assign To</label>
+        <select class="form-select" [(ngModel)]="assignmentType" name="assignmentType">
+          <option value="all">All Candidates</option>
+          <option value="users">Individual People</option>
+          <option value="groups">Specific Groups</option>
+        </select>
+      </div>
+
+      @if (assignmentType === 'users') {
+        <div class="form-group assignment-box">
+          <label class="form-label">Search Candidates</label>
+          <input class="form-input" type="text" [(ngModel)]="userSearchQuery" name="userSearchQuery" 
+                 (input)="onUserSearch()" placeholder="Search by name or email...">
+          
+          <div class="list-container mt-2">
+            @for (user of filteredUsers; track user._id) {
+              <div class="list-item" (click)="toggleUserSelection(user._id)">
+                <input type="checkbox" [checked]="selectedUsers.includes(user._id)" 
+                       (change)="toggleUserSelection(user._id)">
+                <div class="item-details">
+                  <span class="item-name">{{ user.name }}</span>
+                  <span class="item-sub">{{ user.email }}</span>
+                </div>
+              </div>
+            }
+            @if (filteredUsers.length === 0) {
+              <div class="empty-state">No candidates found</div>
+            }
+          </div>
+        </div>
+      }
+
+      @if (assignmentType === 'groups') {
+        <div class="form-group assignment-box">
+          <label class="form-label">Select Groups</label>
+          <div class="list-container">
+            @for (group of availableGroups; track group) {
+              <div class="list-item" (click)="toggleGroupSelection(group)">
+                <input type="checkbox" [checked]="selectedGroups.includes(group)" 
+                       (change)="toggleGroupSelection(group)">
+                <div class="item-details">
+                  <span class="item-name">{{ group }}</span>
+                </div>
+              </div>
+            }
+            @if (availableGroups.length === 0) {
+              <div class="empty-state">No groups found</div>
+            }
+          </div>
+        </div>
+      }
+
+      <div class="form-group">
         <label class="form-label">Questions File (Excel) *</label>
         <div class="file-upload" (click)="fileInput.click()">
           <input #fileInput type="file" accept=".xlsx,.xls" (change)="onFileSelected($event)" hidden>

@@ -237,7 +237,8 @@
   transition: color 0.2s;
 }
 
-.input-group input {
+.input-group input,
+.input-group select {
   width: 100%;
   padding: 13px 16px 13px 48px;
   background: #f8f9fb;
@@ -250,11 +251,17 @@
   transition: all 0.2s ease;
 }
 
+.input-group select {
+  cursor: pointer;
+  appearance: auto;
+}
+
 .input-group input::placeholder {
   color: #b0b8c4;
 }
 
-.input-group input:focus {
+.input-group input:focus,
+.input-group select:focus {
   border-color: #4f6ef7;
   background: #fff;
   box-shadow: 0 0 0 3px rgba(79, 110, 247, 0.08);

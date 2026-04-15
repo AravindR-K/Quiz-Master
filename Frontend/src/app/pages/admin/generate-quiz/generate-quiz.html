@@ -64,26 +64,56 @@
         </div>
 
         <div class="form-group">
-          <label>Assign Quiz</label>
-
-          <div style="margin-bottom: 10px;">
-            <label>
-              <input type="checkbox" [checked]="assignToAll()" (change)="assignToAll.set(!assignToAll())" />
-              Assign to All Users
-            </label>
-          </div>
-
-          @if (!assignToAll()) {
-          <div class="group-list">
-            @for (group of groups(); track group._id) {
-            <label style="display:block; margin-bottom:6px;">
-              <input type="checkbox" [value]="group.name" (change)="onGroupToggle(group.name, $event)" />
-              {{ group.name }}
-            </label>
-            }
-          </div>
-          }
+          <label>Assign Quiz To</label>
+          <select class="form-select" [ngModel]="assignmentType()" (ngModelChange)="assignmentType.set($event)" name="assignmentType">
+            <option value="all">All Candidates</option>
+            <option value="users">Individual People</option>
+            <option value="groups">Specific Groups</option>
+          </select>
         </div>
+
+        @if (assignmentType() === 'users') {
+          <div class="form-group assignment-box">
+            <label>Search Candidates</label>
+            <input class="form-input" type="text" [ngModel]="userSearchQuery()" (ngModelChange)="userSearchQuery.set($event); onUserSearch()" name="userSearchQuery" placeholder="Search by name or email...">
+            
+            <div class="list-container mt-2">
+              @for (user of filteredUsers; track user._id) {
+                <div class="list-item" (click)="toggleUserSelection(user._id)">
+                  <input type="checkbox" [checked]="selectedUsers().includes(user._id)" 
+                         (change)="toggleUserSelection(user._id)">
+                  <div class="item-details">
+                    <span class="item-name">{{ user.name }}</span>
+                    <span class="item-sub">{{ user.email }}</span>
+                  </div>
+                </div>
+              }
+              @if (filteredUsers.length === 0) {
+                <div class="empty-state">No candidates found</div>
+              }
+            </div>
+          </div>
+        }
+
+        @if (assignmentType() === 'groups') {
+          <div class="form-group assignment-box">
+            <label>Select Groups</label>
+            <div class="list-container mt-2">
+              @for (group of groups(); track group) {
+                <div class="list-item" (click)="onGroupToggle(group, {target: {checked: !selectedGroups().includes(group)}})">
+                  <input type="checkbox" [checked]="selectedGroups().includes(group)" 
+                         (change)="onGroupToggle(group, $event)">
+                  <div class="item-details">
+                    <span class="item-name">{{ group }}</span>
+                  </div>
+                </div>
+              }
+              @if (groups().length === 0) {
+                <div class="empty-state">No groups found</div>
+              }
+            </div>
+          </div>
+        }
         <button mat-raised-button color="primary" type="submit" class="btn btn-primary" [disabled]="loading()">
           @if (loading()) {
           <span class="spinner"></span> Creating Quiz...

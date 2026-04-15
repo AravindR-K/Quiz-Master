@@ -38,6 +38,10 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/admin/user-history/user-history').then(m => m.UserHistoryComponent)
       },
       {
+        path: 'manage-groups',
+        loadComponent: () => import('./pages/admin/manage-groups/manage-groups').then(m => m.ManageGroupsComponent)
+      },
+      {
         path: 'submissions/:submissionId',
         loadComponent: () => import('./pages/admin/submission-detail/submission-detail').then(m => m.SubmissionDetailComponent)
       },
@@ -78,6 +82,10 @@ export const routes: Routes = [
       {
         path: 'candidates',
         loadComponent: () => import('./pages/hr/candidates/candidates').then(m => m.HRCandidatesComponent)
+      },
+      {
+        path: 'manage-groups',
+        loadComponent: () => import('./pages/admin/manage-groups/manage-groups').then(m => m.ManageGroupsComponent)
       },
       {
         path: 'candidates/:userId/history',

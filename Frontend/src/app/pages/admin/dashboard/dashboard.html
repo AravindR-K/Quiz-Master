@@ -70,7 +70,7 @@
     <div class="section">
       <h2 class="section-title">Quick Actions</h2>
       <div class="actions-grid">
-        <a routerLink="/admin/users" class="action-card card card-hover card-padding">
+        <a (click)="openUsersPopup()" class="action-card card card-hover card-padding" style="cursor: pointer;">
           <span class="material-symbols-rounded action-icon">group</span>
           <div class="action-info">
             <h3>Manage Users</h3>

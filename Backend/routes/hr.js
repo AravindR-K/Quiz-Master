@@ -2,6 +2,7 @@ const express = require('express');
 const xlsx = require('xlsx');
 const fs = require('fs');
 const User = require('../models/User');
+const Group = require('../models/Group');
 const Quiz = require('../models/Quiz');
 const Question = require('../models/Question');
 const Submission = require('../models/Submission');
@@ -292,8 +293,65 @@ router.get('/categories', async (req, res) => {
 // @route   GET /api/hr/groups
 router.get('/groups', async (req, res) => {
   try {
-    const groups = await User.distinct('group');
-    res.json({ groups });
+    const groups = await Group.find().sort({ name: 1 });
+    const groupNames = groups.map(g => g.name);
+    const userGroups = await User.distinct('group');
+    const allGroups = [...new Set([...groupNames, ...userGroups])].filter(g => g && g !== 'General');
+    res.json({ groups: allGroups });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// @route   POST /api/hr/groups
+router.post('/groups', async (req, res) => {
+  try {
+    const { name } = req.body;
+    if (!name || !name.trim()) return res.status(400).json({ message: 'Group name is required' });
+
+    const existing = await Group.findOne({ name: name.trim() });
+    if (existing) return res.status(400).json({ message: 'Group already exists' });
+
+    const group = await Group.create({ name: name.trim() });
+    res.status(201).json({ message: 'Group created successfully', group: group.name });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// @route   PUT /api/hr/groups/:oldName
+router.put('/groups/:oldName', async (req, res) => {
+  try {
+    const { oldName } = req.params;
+    const { newName } = req.body;
+
+    if (!newName || !newName.trim()) return res.status(400).json({ message: 'New group name is required' });
+
+    const existing = await Group.findOne({ name: newName.trim() });
+    if (existing && existing.name !== oldName) {
+      return res.status(400).json({ message: 'A group with this name already exists' });
+    }
+
+    await Group.findOneAndUpdate({ name: oldName }, { name: newName.trim() });
+    await User.updateMany({ group: oldName }, { group: newName.trim() });
+    await Quiz.updateMany({ assignedGroups: oldName }, { $set: { "assignedGroups.$": newName.trim() } });
+
+    res.json({ message: 'Group updated successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// @route   DELETE /api/hr/groups/:name
+router.delete('/groups/:name', async (req, res) => {
+  try {
+    const { name } = req.params;
+
+    await Group.deleteOne({ name });
+    await User.updateMany({ group: name }, { group: 'General' });
+    await Quiz.updateMany({ assignedGroups: name }, { $pull: { assignedGroups: name } });
+
+    res.json({ message: 'Group deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

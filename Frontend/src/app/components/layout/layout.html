@@ -37,14 +37,22 @@
       <!-- Navigation -->
       <nav class="sidebar-nav">
         @for (item of navItems(); track item.route) {
-          <a [routerLink]="item.route"
-             routerLinkActive="active"
-             [routerLinkActiveOptions]="{exact: item.route.includes('dashboard')}"
-             class="nav-item"
-             (click)="mobileSidebarOpen = false">
-            <span class="material-symbols-rounded nav-icon">{{ item.icon }}</span>
-            <span class="nav-label">{{ item.label }}</span>
-          </a>
+          @if (item.route === '/admin/users' || item.route === '/hr/candidates') {
+            <a class="nav-item" (click)="handleNavClick(item, $event)" href="javascript:void(0)"
+               [class.active]="router.url.includes('/admin/users') || router.url.includes('/hr/candidates') || router.url.includes('manage-groups')">
+              <span class="material-symbols-rounded nav-icon">{{ item.icon }}</span>
+              <span class="nav-label">{{ item.label }}</span>
+            </a>
+          } @else {
+            <a [routerLink]="item.route"
+               routerLinkActive="active"
+               [routerLinkActiveOptions]="{exact: item.route.includes('dashboard')}"
+               class="nav-item"
+               (click)="mobileSidebarOpen = false">
+              <span class="material-symbols-rounded nav-icon">{{ item.icon }}</span>
+              <span class="nav-label">{{ item.label }}</span>
+            </a>
+          }
         }
       </nav>
 
@@ -86,3 +94,41 @@
     <router-outlet />
   </main>
 </div>
+
+<!-- Manage Users Glassy Popup -->
+@if (uiService.showManageUsersPopup()) {
+  <div class="glassy-overlay" (click)="closeManageUsersPopup()">
+    <div class="glassy-modal animate-fade-in" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Manage Users & Groups</h2>
+        <button class="close-btn" (click)="closeManageUsersPopup()">
+          <span class="material-symbols-rounded">close</span>
+        </button>
+      </div>
+      
+      <div class="modal-options">
+        <a [routerLink]="getUsersRoute()" class="glassy-option" (click)="closeManageUsersPopup()">
+          <div class="option-icon-wrapper">
+            <span class="material-symbols-rounded block-icon">people</span>
+          </div>
+          <div class="option-text">
+            <h3>Student Users</h3>
+            <p>Review and manage candidate profiles and test histories</p>
+          </div>
+          <span class="material-symbols-rounded arrow-icon">arrow_forward</span>
+        </a>
+        
+        <a [routerLink]="getManageGroupsRoute()" class="glassy-option" (click)="closeManageUsersPopup()">
+          <div class="option-icon-wrapper">
+            <span class="material-symbols-rounded block-icon">group_add</span>
+          </div>
+          <div class="option-text">
+            <h3>Manage Groups</h3>
+            <p>Create and structure student categorization effectively</p>
+          </div>
+          <span class="material-symbols-rounded arrow-icon">arrow_forward</span>
+        </a>
+      </div>
+    </div>
+  </div>
+}

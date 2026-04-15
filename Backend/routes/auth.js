@@ -1,6 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Group = require('../models/Group');
 const { protect } = require('../middleware/auth');
 const router = express.Router();
 
@@ -16,7 +17,7 @@ const generateToken = (id) => {
 // @access  Public
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, group } = req.body;
 
     // Validate input
     if (!name || !email || !password) {
@@ -30,7 +31,10 @@ router.post('/register', async (req, res) => {
     }
 
     // Create user (role defaults to 'candidate')
-    const user = await User.create({ name, email, password, role: 'candidate' });
+    const userDbData = { name, email, password, role: 'candidate' };
+    if (group) userDbData.group = group;
+    
+    const user = await User.create(userDbData);
 
     res.status(201).json({
       message: 'Registration successful',
@@ -110,6 +114,22 @@ router.get('/me', protect, async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select('-password');
     res.json({ user });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// @route   GET /api/auth/groups
+// @desc    Get all groups for registration
+// @access  Public
+router.get('/groups', async (req, res) => {
+  try {
+    const groups = await Group.find().sort({ name: 1 });
+    const groupNames = groups.map(g => g.name);
+    // Backward compatibility: fetch from User model too
+    const userGroups = await User.distinct('group');
+    const allGroups = [...new Set([...groupNames, ...userGroups])].filter(g => g && g !== 'General');
+    res.json({ groups: allGroups });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

@@ -2,6 +2,7 @@
   const xlsx = require('xlsx');
   const fs = require('fs');
   const User = require('../models/User');
+  const Group = require('../models/Group');
   const Quiz = require('../models/Quiz');
   const Question = require('../models/Question');
   const Submission = require('../models/Submission');
@@ -190,8 +191,7 @@
       if (!req.file) {
         return res.status(400).json({ message: 'Please upload an Excel file with questions' });
       }
-      console.log("FILE:", req.file);
-      console.log("BODY:", req.body);
+
       // Parse Excel file
       const workbook = xlsx.readFile(req.file.path);
       const sheetName = workbook.SheetNames[0];
@@ -473,8 +473,13 @@
   // @access  Admin
   router.get('/groups', async (req, res) => {
     try {
-      const groups = await User.distinct('group');
-      res.json({ groups });
+      const groups = await Group.find().sort({ name: 1 });
+      const groupNames = groups.map(g => g.name);
+      // Fetch legacy groups from users just to be safe
+      const userGroups = await User.distinct('group');
+      const allGroups = [...new Set([...groupNames, ...userGroups])].filter(g => g && g !== 'General');
+      
+      res.json({ groups: allGroups });
     } catch (error) {
       res.status(500).json({ message: 'Server error', error: error.message });
     }
@@ -494,16 +499,56 @@
       }
 
       // Check if already exists
-      const existing = await User.findOne({ group: name.trim() });
-
+      const existing = await Group.findOne({ name: name.trim() });
       if (existing) {
         return res.status(400).json({ message: 'Group already exists' });
       }
 
-      // ⚠️ Since you're using group as string,
-      // we don't store separately — just return success
-      res.status(201).json({ message: 'Group created successfully', group: name.trim() });
+      const group = await Group.create({ name: name.trim() });
+      res.status(201).json({ message: 'Group created successfully', group: group.name });
 
+    } catch (error) {
+      res.status(500).json({ message: 'Server error', error: error.message });
+    }
+  });
+
+  // @route   PUT /api/admin/groups/:oldName
+  // @desc    Edit a group name
+  // @access  Admin
+  router.put('/groups/:oldName', async (req, res) => {
+    try {
+      const { oldName } = req.params;
+      const { newName } = req.body;
+
+      if (!newName || !newName.trim()) return res.status(400).json({ message: 'New group name is required' });
+
+      const existing = await Group.findOne({ name: newName.trim() });
+      if (existing && existing.name !== oldName) {
+        return res.status(400).json({ message: 'A group with this name already exists' });
+      }
+
+      await Group.findOneAndUpdate({ name: oldName }, { name: newName.trim() });
+      await User.updateMany({ group: oldName }, { group: newName.trim() });
+      await Quiz.updateMany({ assignedGroups: oldName }, { $set: { "assignedGroups.$": newName.trim() } });
+
+      res.json({ message: 'Group updated successfully' });
+    } catch (error) {
+      res.status(500).json({ message: 'Server error', error: error.message });
+    }
+  });
+
+  // @route   DELETE /api/admin/groups/:name
+  // @desc    Delete a group
+  // @access  Admin
+  router.delete('/groups/:name', async (req, res) => {
+    try {
+      const { name } = req.params;
+
+      await Group.deleteOne({ name });
+      await User.updateMany({ group: name }, { group: 'General' });
+      await Quiz.updateMany({ assignedGroups: name }, { $pull: { assignedGroups: name } });
+
+      res.json({ message: 'Group deleted successfully' });
     } catch (error) {
       res.status(500).json({ message: 'Server error', error: error.message });
     }

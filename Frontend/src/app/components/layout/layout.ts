@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, RouterOutlet, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ThemeService, ThemeMode } from '../../services/theme.service';
+import { UiService } from '../../services/ui.service';
 
 interface NavItem {
   icon: string;
@@ -21,6 +22,7 @@ export class LayoutComponent {
   authService = inject(AuthService);
   themeService = inject(ThemeService);
   router = inject(Router);
+  uiService = inject(UiService);
 
   showThemeMenu = false;
   mobileSidebarOpen = false;
@@ -87,5 +89,26 @@ export class LayoutComponent {
 
   logout(): void {
     this.authService.logout();
+  }
+
+  handleNavClick(item: NavItem, event: Event): void {
+    if (item.route === '/admin/users' || item.route === '/hr/candidates') {
+      event.preventDefault();
+      this.uiService.showManageUsersPopup.set(true);
+    } else {
+      this.mobileSidebarOpen = false;
+    }
+  }
+
+  closeManageUsersPopup(): void {
+    this.uiService.showManageUsersPopup.set(false);
+  }
+
+  getUsersRoute(): string {
+    return this.authService.getUserRole() === 'hr' ? '/hr/candidates' : '/admin/users';
+  }
+  
+  getManageGroupsRoute(): string {
+    return this.authService.getUserRole() === 'hr' ? '/hr/manage-groups' : '/admin/manage-groups';
   }
 }

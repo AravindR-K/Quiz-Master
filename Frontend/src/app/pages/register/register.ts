@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -11,15 +11,24 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './register.html',
   styleUrl: './register.css'
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit {
   name = '';
   email = '';
   password = '';
   confirmPassword = '';
+  group = '';
+  availableGroups = signal<string[]>([]);
   error = signal<string>('');
   loading = signal<boolean>(false);
 
   constructor(private authService: AuthService, private router: Router) {}
+
+  ngOnInit(): void {
+    this.authService.getRegistrationGroups().subscribe({
+      next: (res) => this.availableGroups.set(res.groups || []),
+      error: () => console.error('Failed to load groups for registration')
+    });
+  }
 
   onSubmit(): void {
     if (!this.name || !this.email || !this.password || !this.confirmPassword) {
@@ -40,7 +49,7 @@ export class RegisterComponent {
     this.loading.set(true);
     this.error.set('');
 
-    this.authService.register(this.name, this.email, this.password).subscribe({
+    this.authService.register(this.name, this.email, this.password, this.group).subscribe({
       next: () => {
         this.loading.set(false);
         alert('Registration successful! Please sign in.');

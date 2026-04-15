@@ -1,0 +1,50 @@
+.page-container { padding: 32px 40px; max-width: 900px; }
+.page-header { margin-bottom: 28px; }
+.page-header h1 { font-size: 26px; font-weight: 700; color: var(--text-primary); margin: 0 0 8px; }
+.page-subtitle { color: var(--text-muted); font-size: 14px; margin: 0; }
+
+.section-title { font-size: 18px; font-weight: 600; color: var(--text-primary); margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
+.form-card .section-title { margin-top: 0; border: none; padding: 0; margin-bottom: 16px; }
+
+.card { background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--border-color); }
+.card-padding { padding: 24px; }
+
+.group-form { display: flex; flex-direction: column; }
+.row-align { display: flex; gap: 16px; align-items: center; }
+
+.input-container { flex: 1; position: relative; display: flex; align-items: center; }
+.input-container .block-icon { position: absolute; left: 16px; color: var(--text-muted); font-size: 20px; }
+.form-input { width: 100%; padding: 14px 16px 14px 44px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 12px; color: var(--text-primary); outline: none; transition: all 0.3s; font-size: 15px; box-sizing: border-box; }
+.form-input:focus { border-color: var(--accent-primary); box-shadow: 0 0 0 3px rgba(102,126,234,0.15); }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 24px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s; font-family: inherit; font-size: 15px; }
+.btn-primary { background: var(--accent-gradient); color: #fff; box-shadow: 0 4px 15px rgba(102,126,234,0.3); }
+.btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102,126,234,0.4); }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.groups-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.group-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; display: flex; align-items: center; gap: 16px; transition: all 0.3s; }
+.group-card:hover { border-color: var(--accent-primary); transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.group-icon-wrapper { width: 50px; height: 50px; border-radius: 12px; background: linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(102,126,234,0.2) 100%); color: var(--accent-primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.group-icon-wrapper .material-symbols-rounded { font-size: 26px; }
+.group-details h4 { margin: 0; font-size: 17px; font-weight: 600; color: var(--text-primary); }
+
+.alert { display: flex; align-items: center; gap: 10px; padding: 14px 20px; border-radius: 12px; margin-bottom: 24px; font-size: 14px; font-weight: 500; }
+.alert-success { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.2); color: #22c55e; }
+.alert-error { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); color: #ef4444; }
+
+.spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; }
+.loader { width: 40px; height: 40px; border: 3px solid rgba(102,126,234,0.2); border-top-color: var(--accent-primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+.loading-state { display: flex; justify-content: center; padding: 40px; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+.empty-state { text-align: center; padding: 60px 0; border: 1px dashed var(--border-color); border-radius: 16px; background: rgba(255,255,255,0.02); }
+.empty-icon { font-size: 48px; color: var(--text-muted); display: block; margin-bottom: 12px; }
+.empty-state h3 { color: var(--text-primary); margin: 0 0 8px; font-size: 18px; }
+.empty-state p { color: var(--text-muted); margin: 0; font-size: 14px; }
+
+@media (max-width: 600px) {
+  .page-container { padding: 20px 16px; }
+  .row-align { flex-direction: column; align-items: stretch; }
+  .groups-grid { grid-template-columns: 1fr; }
+}

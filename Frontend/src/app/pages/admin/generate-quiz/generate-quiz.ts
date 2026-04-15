@@ -18,9 +18,14 @@ export class GenerateQuizComponent implements OnInit {
   timer = 30;
   selectedFile: File | null = null;
   fileName = signal<string>('');
-  groups = signal<any[]>([]);
+  groups = signal<any[]>([]); // Actually used for groups now, let's keep it as string[] if the backend returns strings
+  availableUsers: any[] = [];
+  filteredUsers: any[] = [];
+  assignmentType = signal<string>('all'); // 'all', 'users', 'groups'
+  selectedUsers = signal<string[]>([]);
   selectedGroups = signal<string[]>([]);
-  assignToAll = signal<boolean>(true);
+  userSearchQuery = signal<string>('');
+  
   loading = signal<boolean>(false);
   success = signal<string>('');
   error = signal<string>('');
@@ -32,14 +37,44 @@ export class GenerateQuizComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadQuizzes();
+    this.fetchUsersAndGroups();
+  }
+
+  fetchUsersAndGroups(): void {
     this.quizService.getAdminGroups().subscribe({
       next: (res) => {
         this.groups.set(res.groups || []);
       },
-      error: () => {
-        console.log("Failed to load groups");
-      }
+      error: () => console.log("Failed to load groups")
     });
+
+    this.quizService.getUsers('candidate').subscribe({
+      next: (res) => {
+        this.availableUsers = res.users || [];
+        this.filteredUsers = [...this.availableUsers];
+      },
+      error: () => console.log("Failed to load users")
+    });
+  }
+
+  onUserSearch(): void {
+    const q = this.userSearchQuery().toLowerCase().trim();
+    if (!q) {
+      this.filteredUsers = [...this.availableUsers];
+    } else {
+      this.filteredUsers = this.availableUsers.filter(u => 
+        u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
+      );
+    }
+  }
+
+  toggleUserSelection(userId: string): void {
+    const selected = this.selectedUsers();
+    if (selected.includes(userId)) {
+      this.selectedUsers.set(selected.filter(id => id !== userId));
+    } else {
+      this.selectedUsers.set([...selected, userId]);
+    }
   }
 
   loadQuizzes(): void {
@@ -82,8 +117,17 @@ export class GenerateQuizComponent implements OnInit {
     formData.append('title', this.title);
     formData.append('timer', this.timer.toString());
     formData.append('questionsFile', this.selectedFile);
-    formData.append('assignToAll', this.assignToAll().toString());
-    formData.append('assignedGroups', JSON.stringify(this.selectedGroups())); 
+    const aType = this.assignmentType();
+    if (aType === 'all') {
+      formData.append('assignToAll', 'true');
+    } else if (aType === 'users') {
+      formData.append('assignToAll', 'false');
+      formData.append('assignees', JSON.stringify(this.selectedUsers()));
+    } else if (aType === 'groups') {
+      formData.append('assignToAll', 'false');
+      formData.append('assignedGroups', JSON.stringify(this.selectedGroups()));
+    }
+
     this.quizService.createQuiz(formData).subscribe({
       next: (res) => {
         this.loading.set(false);

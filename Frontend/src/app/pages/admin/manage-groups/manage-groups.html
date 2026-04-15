@@ -1,0 +1,72 @@
+<div class="page-container animate-fade-in">
+  <div class="page-header">
+    <h1>Manage Groups</h1>
+    <p class="page-subtitle">Create and oversee organizational groups for candidates</p>
+  </div>
+
+  @if (error()) {
+    <div class="alert alert-error"><span class="material-symbols-rounded">error</span> {{ error() }}</div>
+  }
+  @if (success()) {
+    <div class="alert alert-success"><span class="material-symbols-rounded">check_circle</span> {{ success() }}</div>
+  }
+
+  <div class="card card-padding form-card" style="margin-bottom: 40px;">
+    <h2 class="section-title">Create New Group</h2>
+    <form (ngSubmit)="createGroup()" class="group-form">
+      <div class="form-group row-align">
+        <div class="input-container">
+          <span class="material-symbols-rounded block-icon">group_add</span>
+          <input class="form-input" [ngModel]="newGroupName()" (ngModelChange)="newGroupName.set($event)" name="groupName" placeholder="e.g., Spring Cohort 2026">
+        </div>
+        
+        <button type="submit" class="btn btn-primary" [disabled]="loading() || !newGroupName().trim()">
+          @if (loading()) {
+            <span class="spinner"></span>
+          } @else {
+            <span class="material-symbols-rounded">add</span> Add Group
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <h2 class="section-title">Existing Groups</h2>
+  @if (loadingGroups()) {
+    <div class="loading-state">
+      <div class="loader"></div>
+    </div>
+  } @else if (groups().length === 0) {
+    <div class="empty-state">
+      <span class="material-symbols-rounded empty-icon">group_off</span>
+      <h3>No groups available</h3>
+      <p>Create your first group above</p>
+    </div>
+  } @else {
+    <div class="groups-grid">
+      @for (group of groups(); track group) {
+        <div class="group-card">
+          <div class="group-icon-wrapper">
+            <span class="material-symbols-rounded">group</span>
+          </div>
+          <div class="group-details" style="flex: 1;">
+            @if (editingGroup() === group) {
+              <input type="text" class="form-input form-input-small" [ngModel]="editName()" (ngModelChange)="editName.set($event)" autofocus>
+            } @else {
+              <h4>{{ group }}</h4>
+            }
+          </div>
+          <div class="group-actions">
+            @if (editingGroup() === group) {
+              <button class="action-btn text-success" (click)="saveEdit(group)" title="Save"><span class="material-symbols-rounded">check</span></button>
+              <button class="action-btn text-danger" (click)="cancelEdit()" title="Cancel"><span class="material-symbols-rounded">close</span></button>
+            } @else {
+              <button class="action-btn" (click)="startEdit(group)" title="Edit"><span class="material-symbols-rounded">edit</span></button>
+              <button class="action-btn text-danger" (click)="deleteGroup(group)" title="Delete"><span class="material-symbols-rounded">delete</span></button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

@@ -150,4 +150,33 @@
     getResultDetails(submissionId: string): Observable<any> {
       return this.http.get(`${this.candidateUrl}/results/${submissionId}`);
     }
+
+    // ========== GENERIC GROUP MANAGEMENT ==========
+    
+    private getBaseUrl(): string {
+      const userStr = sessionStorage.getItem('user');
+      if (userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          if (user.role === 'hr') return this.hrUrl;
+        } catch (e) {}
+      }
+      return this.adminUrl;
+    }
+
+    createGroup(name: string): Observable<any> {
+      return this.http.post(`${this.getBaseUrl()}/groups`, { name });
+    }
+
+    getGroups(): Observable<any> {
+      return this.http.get(`${this.getBaseUrl()}/groups`);
+    }
+
+    updateGroup(oldName: string, newName: string): Observable<any> {
+      return this.http.put(`${this.getBaseUrl()}/groups/${encodeURIComponent(oldName)}`, { newName });
+    }
+
+    deleteGroup(name: string): Observable<any> {
+      return this.http.delete(`${this.getBaseUrl()}/groups/${encodeURIComponent(name)}`);
+    }
   }
