@@ -31,8 +31,8 @@ export class AuthService {
   }
 
   private loadUserFromStorage(): void {
-    const token = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
+    const token = sessionStorage.getItem('token');
+    const user = sessionStorage.getItem('user');  
     if (token && user) {
       this.currentUser.set(JSON.parse(user));
       this.isLoggedIn.set(true);
@@ -49,7 +49,7 @@ export class AuthService {
   }
 
   logout(): void {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');  
     if (token) {
       this.http.post(`${this.apiUrl}/logout`, {}).subscribe({
         complete: () => this.clearAuth(),
@@ -62,23 +62,23 @@ export class AuthService {
 
   private handleAuth(res: AuthResponse): void {
     if (res.token) {
-      localStorage.setItem('token', res.token);
+      sessionStorage.setItem('token', res.token);
     }
-    localStorage.setItem('user', JSON.stringify(res.user));
+    sessionStorage.setItem('user', JSON.stringify(res.user)); 
     this.currentUser.set(res.user);
     this.isLoggedIn.set(true);
   }
 
   private clearAuth(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
     this.currentUser.set(null);
     this.isLoggedIn.set(false);
     this.router.navigate(['/login']);
   }
 
   getToken(): string | null {
-    return localStorage.getItem('token');
+    return sessionStorage.getItem('token'); 
   }
 
   getUserRole(): string | null {

@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { QuizService } from '../../../services/quiz.service';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-generate-quiz',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, MatButtonModule],
   templateUrl: './generate-quiz.html',
   styleUrl: './generate-quiz.css'
 })
@@ -17,7 +18,9 @@ export class GenerateQuizComponent implements OnInit {
   timer = 30;
   selectedFile: File | null = null;
   fileName = signal<string>('');
-  
+  groups = signal<any[]>([]);
+  selectedGroups = signal<string[]>([]);
+  assignToAll = signal<boolean>(true);
   loading = signal<boolean>(false);
   success = signal<string>('');
   error = signal<string>('');
@@ -25,11 +28,18 @@ export class GenerateQuizComponent implements OnInit {
   quizzes = signal<any[]>([]);
   loadingQuizzes = signal<boolean>(true);
 
-  constructor(public authService: AuthService, private quizService: QuizService) {}
+  constructor(public authService: AuthService, private quizService: QuizService) { }
 
   ngOnInit(): void {
-    console.log("Component loaded");
     this.loadQuizzes();
+    this.quizService.getAdminGroups().subscribe({
+      next: (res) => {
+        this.groups.set(res.groups || []);
+      },
+      error: () => {
+        console.log("Failed to load groups");
+      }
+    });
   }
 
   loadQuizzes(): void {
@@ -72,7 +82,8 @@ export class GenerateQuizComponent implements OnInit {
     formData.append('title', this.title);
     formData.append('timer', this.timer.toString());
     formData.append('questionsFile', this.selectedFile);
-
+    formData.append('assignToAll', this.assignToAll().toString());
+    formData.append('assignedGroups', JSON.stringify(this.selectedGroups())); 
     this.quizService.createQuiz(formData).subscribe({
       next: (res) => {
         this.loading.set(false);
@@ -96,6 +107,15 @@ export class GenerateQuizComponent implements OnInit {
         next: () => this.loadQuizzes(),
         error: (err) => this.error.set(err.error?.message || 'Failed to delete quiz')
       });
+    }
+  }
+  onGroupToggle(groupName: string, event: any): void {
+    const selected = this.selectedGroups();
+
+    if (event.target.checked) {
+      this.selectedGroups.set([...selected, groupName]);
+    } else {
+      this.selectedGroups.set(selected.filter(g => g !== groupName));
     }
   }
 

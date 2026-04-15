@@ -1,17 +1,20 @@
 <div class="dashboard-layout">
   <aside class="sidebar">
     <div class="sidebar-header">
-      <span class="logo-icon">📝</span><h2>QuizMaster</h2><span class="role-badge">Admin</span>
+      <span class="logo-icon">📝</span>
+      <h2>QuizMaster</h2><span class="role-badge">Admin</span>
     </div>
     <nav class="sidebar-nav">
       <a routerLink="/admin/dashboard" class="nav-item"><span class="nav-icon">🏠</span><span>Dashboard</span></a>
       <a routerLink="/admin/users" class="nav-item"><span class="nav-icon">👥</span><span>Users</span></a>
-      <a routerLink="/admin/generate-quiz" class="nav-item active"><span class="nav-icon">➕</span><span>Generate Quiz</span></a>
+      <a routerLink="/admin/generate-quiz" class="nav-item active"><span class="nav-icon">➕</span><span>Generate
+          Quiz</span></a>
     </nav>
     <div class="sidebar-footer">
       <div class="user-info">
         <div class="user-avatar">{{ authService.currentUser()?.name?.charAt(0) || 'A' }}</div>
-        <div class="user-details"><span class="user-name">{{ authService.currentUser()?.name }}</span><span class="user-email">{{ authService.currentUser()?.email }}</span></div>
+        <div class="user-details"><span class="user-name">{{ authService.currentUser()?.name }}</span><span
+            class="user-email">{{ authService.currentUser()?.email }}</span></div>
       </div>
       <button class="logout-btn" (click)="logout()"><span>🚪</span> Logout</button>
     </div>
@@ -24,10 +27,10 @@
     </div>
 
     @if (success()) {
-      <div class="alert alert-success">✅ {{ success() }}</div>
+    <div class="alert alert-success">✅ {{ success() }}</div>
     }
     @if (error()) {
-      <div class="alert alert-error">⚠️ {{ error() }}</div>
+    <div class="alert alert-error">⚠️ {{ error() }}</div>
     }
 
     <div class="create-section">
@@ -35,7 +38,8 @@
         <div class="form-row">
           <div class="form-group">
             <label for="title">Quiz Name</label>
-            <input type="text" id="title" [(ngModel)]="title" name="title" placeholder="e.g., JavaScript Fundamentals" />
+            <input type="text" id="title" [(ngModel)]="title" name="title"
+              placeholder="e.g., JavaScript Fundamentals" />
           </div>
           <div class="form-group">
             <label for="timer">Timer (minutes)</label>
@@ -48,53 +52,77 @@
           <div class="file-upload" (click)="fileInput.click()">
             <input #fileInput type="file" accept=".xlsx,.xls" (change)="onFileSelected($event)" hidden />
             @if (fileName()) {
-              <span class="file-icon">📄</span>
-              <span class="file-name">{{ fileName() }}</span>
-              <span class="file-change">Change</span>
+            <span class="file-icon">📄</span>
+            <span class="file-name">{{ fileName() }}</span>
+            <span class="file-change">Change</span>
             } @else {
-              <span class="upload-icon">📤</span>
-              <span class="upload-text">Click to upload Excel file</span>
-              <span class="upload-hint">Format: Question | Option1 | Option2 | Option3 | Option4 | Correct</span>
+            <span class="upload-icon">📤</span>
+            <span class="upload-text">Click to upload Excel file</span>
+            <span class="upload-hint">Format: Question | Option1 | Option2 | Option3 | Option4 | Correct</span>
             }
           </div>
         </div>
 
-        <button type="submit" class="btn btn-primary" [disabled]="loading()">
+        <div class="form-group">
+          <label>Assign Quiz</label>
+
+          <div style="margin-bottom: 10px;">
+            <label>
+              <input type="checkbox" [checked]="assignToAll()" (change)="assignToAll.set(!assignToAll())" />
+              Assign to All Users
+            </label>
+          </div>
+
+          @if (!assignToAll()) {
+          <div class="group-list">
+            @for (group of groups(); track group._id) {
+            <label style="display:block; margin-bottom:6px;">
+              <input type="checkbox" [value]="group.name" (change)="onGroupToggle(group.name, $event)" />
+              {{ group.name }}
+            </label>
+            }
+          </div>
+          }
+        </div>
+        <button mat-raised-button color="primary" type="submit" class="btn btn-primary" [disabled]="loading()">
           @if (loading()) {
-            <span class="spinner"></span> Creating Quiz...
+          <span class="spinner"></span> Creating Quiz...
           } @else {
-            🚀 Create Quiz
+          🚀 Create Quiz
           }
         </button>
+
       </form>
     </div>
 
     <!-- Existing Quizzes -->
     <h2 class="section-title">Existing Quizzes</h2>
     @if (loadingQuizzes()) {
-      <div class="loading-state"><div class="loader"></div></div>
+    <div class="loading-state">
+      <div class="loader"></div>
+    </div>
     } @else if (quizzes().length === 0) {
-      <div class="empty-state">
-        <span class="empty-icon">📋</span>
-        <h3>No quizzes yet</h3>
-        <p>Create your first quiz above</p>
-      </div>
+    <div class="empty-state">
+      <span class="empty-icon">📋</span>
+      <h3>No quizzes yet</h3>
+      <p>Create your first quiz above</p>
+    </div>
     } @else {
-      <div class="quiz-grid">
-        @for (quiz of quizzes(); track quiz._id) {
-          <div class="quiz-card">
-            <div class="quiz-card-header">
-              <h4>{{ quiz.title }}</h4>
-              <button class="delete-btn" (click)="deleteQuiz(quiz._id)">🗑️</button>
-            </div>
-            <div class="quiz-meta">
-              <span>⏱️ {{ quiz.timer }} min</span>
-              <span>📝 {{ quiz.totalQuestions }} questions</span>
-            </div>
-            <span class="quiz-date">Created {{ quiz.createdAt | date:'mediumDate' }}</span>
-          </div>
-        }
+    <div class="quiz-grid">
+      @for (quiz of quizzes(); track quiz._id) {
+      <div class="quiz-card">
+        <div class="quiz-card-header">
+          <h4>{{ quiz.title }}</h4>
+          <button class="delete-btn" (click)="deleteQuiz(quiz._id)">🗑️</button>
+        </div>
+        <div class="quiz-meta">
+          <span>⏱️ {{ quiz.timer }} min</span>
+          <span>📝 {{ quiz.totalQuestions }} questions</span>
+        </div>
+        <span class="quiz-date">Created {{ quiz.createdAt | date:'mediumDate' }}</span>
       </div>
+      }
+    </div>
     }
   </main>
 </div>

@@ -56,34 +56,53 @@ export class EditQuizComponent implements OnInit {
       }
     });
   }
-
-  onSave(): void {
-    if (!this.title.trim()) { this.error.set('Title is required'); return; }
-    this.saving.set(true);
-    this.error.set('');
-
-    const data = {
-      title: this.title,
-      timer: this.timer,
-      category: this.category,
-      difficulty: this.difficulty,
-      topic: this.topic,
-      questions: this.questions()
-    };
-
-    this.quizService.updateQuiz(this.quizId, data).subscribe({
-      next: () => {
-        this.saving.set(false);
-        this.success.set('Quiz updated successfully!');
-        setTimeout(() => this.router.navigate(['/admin/quizzes']), 1200);
-      },
-      error: (err) => {
-        this.saving.set(false);
-        this.error.set(err.error?.message || 'Failed to update quiz');
-      }
-    });
+onSave(): void {
+  if (!this.title.trim()) {
+    this.error.set('Title is required');
+    return;
   }
 
+  this.saving.set(true);
+  this.error.set('');
+
+  // 🔥 Format questions correctly
+  const formattedQuestions = this.questions().map(q => {
+    const options = q.options;
+
+    const correctIndex = options.findIndex(
+      (opt: string) => opt == q.correctAnswer
+    );
+
+    return {
+      question: q.question,
+      options,
+      correctAnswers: [correctIndex.toString()],
+      type: 'single'
+    };
+  }); // ✅ closes map()
+
+  // 🔥 Final data
+  const data = {
+    title: this.title,
+    timer: this.timer,
+    category: this.category,
+    difficulty: this.difficulty,
+    topic: this.topic,
+    questions: formattedQuestions
+  }; // ✅ closes data object
+
+  this.quizService.updateQuiz(this.quizId, data).subscribe({
+    next: () => {
+      this.saving.set(false);
+      this.success.set('Quiz updated successfully!');
+      setTimeout(() => this.router.navigate(['/admin/quizzes']), 1200);
+    },
+    error: (err) => {
+      this.saving.set(false);
+      this.error.set(err.error?.message || 'Failed to update quiz');
+    }
+  }); // ✅ closes subscribe
+} // ✅ closes function
   updateQuestion(index: number, field: string, value: any): void {
     const q = [...this.questions()];
     q[index] = { ...q[index], [field]: value };
