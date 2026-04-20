@@ -1,23 +1,4 @@
-<div class="dashboard-layout">
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <span class="logo-icon">📝</span><h2>QuizMaster</h2><span class="role-badge">Admin</span>
-    </div>
-    <nav class="sidebar-nav">
-      <a routerLink="/admin/dashboard" class="nav-item"><span class="nav-icon">🏠</span><span>Dashboard</span></a>
-      <a routerLink="/admin/users" class="nav-item active"><span class="nav-icon">👥</span><span>Users</span></a>
-      <a routerLink="/admin/generate-quiz" class="nav-item"><span class="nav-icon">➕</span><span>Generate Quiz</span></a>
-    </nav>
-    <div class="sidebar-footer">
-      <div class="user-info">
-        <div class="user-avatar">{{ authService.currentUser()?.name?.charAt(0) || 'A' }}</div>
-        <div class="user-details"><span class="user-name">{{ authService.currentUser()?.name }}</span><span class="user-email">{{ authService.currentUser()?.email }}</span></div>
-      </div>
-      <button class="logout-btn" (click)="logout()"><span>🚪</span> Logout</button>
-    </div>
-  </aside>
-
-  <main class="main-content">
+<div class="page-container animate-fade-in">
     @if (loading()) {
       <div class="loading-state"><div class="loader"></div><p>Loading details...</p></div>
     } @else if (submission()) {
@@ -76,5 +57,4 @@
         }
       </div>
     }
-  </main>
 </div>

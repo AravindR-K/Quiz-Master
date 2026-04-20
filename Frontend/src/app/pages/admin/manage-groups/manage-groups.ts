@@ -1,18 +1,21 @@
-import { Component, signal, OnInit } from '@angular/core';
+import { Component, signal, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { QuizService } from '../../../services/quiz.service';
+import { DragDropModule, CdkDragDrop } from '@angular/cdk/drag-drop';
 
 @Component({
   selector: 'app-manage-groups',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, DragDropModule],
   templateUrl: './manage-groups.html',
   styleUrl: './manage-groups.css'
 })
 export class ManageGroupsComponent implements OnInit {
   groups = signal<string[]>([]);
+  allStudents = signal<any[]>([]);
+  
   newGroupName = signal<string>('');
   loading = signal<boolean>(false);
   error = signal<string>('');
@@ -22,10 +25,17 @@ export class ManageGroupsComponent implements OnInit {
   editingGroup = signal<string | null>(null);
   editName = signal<string>('');
 
+  expandedGroup = signal<string | null>(null);
+
+  unassignedStudents = computed(() => {
+    return this.allStudents().filter(s => !s.group || s.group === 'General');
+  });
+
   constructor(private quizService: QuizService) {}
 
   ngOnInit(): void {
     this.loadGroups();
+    this.loadStudents();
   }
 
   loadGroups(): void {
@@ -40,6 +50,32 @@ export class ManageGroupsComponent implements OnInit {
         this.loadingGroups.set(false);
       }
     });
+  }
+
+  loadStudents(): void {
+    this.quizService.getUsers('candidate').subscribe({
+      next: (res) => {
+        // Since getUsers('candidate') might not exist perfectly on HR route if we don't change HR route, wait, HR route has getHRCandidates
+        // Let's rely on standard getUsers which points to getBaseUrl()/users depending on role if properly set. Actually quiz.service.ts uses adminUrl directly for getUsers. Let's see. I will dynamically fetch.
+        this.allStudents.set(res.users ? res.users.filter((u:any) => u.role === 'candidate') : (res.candidates || []));
+      },
+      error: () => {}
+    });
+  }
+
+  getStudentsInGroup(groupName: string): any[] {
+    return this.allStudents().filter(s => s.group === groupName);
+  }
+
+  toggleGroupExpansion(groupName: string, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    if (this.expandedGroup() === groupName) {
+      this.expandedGroup.set(null);
+    } else {
+      this.expandedGroup.set(groupName);
+    }
   }
 
   createGroup(): void {
@@ -89,6 +125,10 @@ export class ManageGroupsComponent implements OnInit {
         this.success.set('Group updated successfully!');
         this.cancelEdit();
         this.loadGroups();
+        // Update local students cache
+        this.allStudents.update(students => 
+           students.map(s => s.group === oldName ? { ...s, group: trimmed } : s)
+        );
       },
       error: (err) => {
         this.error.set(err.error?.message || 'Failed to update group');
@@ -97,18 +137,57 @@ export class ManageGroupsComponent implements OnInit {
   }
 
   deleteGroup(name: string): void {
-    if (confirm(`Are you sure you want to delete the group "${name}"?\nUsers dynamically mapped to this group will lose group context.`)) {
+    if (confirm(`Are you sure you want to delete the group "${name}"?\nUsers mapped to this group will moved to Unassigned.`)) {
       this.error.set('');
       this.success.set('');
       this.quizService.deleteGroup(name).subscribe({
         next: () => {
           this.success.set('Group deleted successfully!');
           this.loadGroups();
+          // Move students to General
+          this.allStudents.update(students => 
+             students.map(s => s.group === name ? { ...s, group: 'General' } : s)
+          );
         },
         error: (err) => {
           this.error.set(err.error?.message || 'Failed to delete group');
         }
       });
     }
+  }
+
+  onDrop(event: CdkDragDrop<string>) {
+    if (event.previousContainer === event.container) {
+      return; // No change
+    }
+    
+    const student = event.item.data;
+    const previousGroup = event.previousContainer.data;
+    const newGroup = event.container.data;
+
+    this.allStudents.update(students => 
+       students.map(s => s._id === student._id ? { ...s, group: newGroup } : s)
+    );
+
+    this.quizService.assignUserGroup(student._id, newGroup).subscribe({
+       next: () => {
+          // Success
+          this.success.set(``);
+       },
+       error: () => {
+          this.error.set('Failed to assign user to group');
+          this.loadStudents(); 
+       }
+    });
+  }
+
+  removeFromGroup(student: any) {
+    this.allStudents.update(students => 
+       students.map(s => s._id === student._id ? { ...s, group: 'General' } : s)
+    );
+    this.quizService.assignUserGroup(student._id, 'General').subscribe({
+       next: () => {},
+       error: () => this.loadStudents()
+    });
   }
 }

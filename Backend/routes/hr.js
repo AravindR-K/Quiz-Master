@@ -357,6 +357,31 @@ router.delete('/groups/:name', async (req, res) => {
   }
 });
 
+// @route   PUT /api/hr/users/:userId/group
+// @desc    Assign user to a group explicitly
+// @access  HR
+router.put('/users/:userId/group', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { group } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    
+    // Only allow HR to modify candidates (optional security check)
+    if (user.role === 'admin' || user.role === 'hr') {
+      return res.status(403).json({ message: 'HR can only assign candidates to groups' });
+    }
+
+    user.group = group || 'General';
+    await user.save();
+
+    res.json({ message: 'User assigned to group successfully', user });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 // @route   GET /api/hr/stats
 router.get('/stats', async (req, res) => {
   try {

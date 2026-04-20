@@ -76,24 +76,7 @@
           </div>
         </div>
 
-        @if (availableGroups().length > 0) {
-        <div class="field">
-          <label for="group">Student Group (Optional)</label>
-          <div class="input-group">
-            <span class="material-symbols-rounded input-icon">group</span>
-            <select
-              id="group"
-              [(ngModel)]="group"
-              name="group"
-            >
-              <option value="" disabled selected>Select your group</option>
-              @for (grp of availableGroups(); track grp) {
-                <option [value]="grp">{{ grp }}</option>
-              }
-            </select>
-          </div>
-        </div>
-        }
+
 
         <div class="fields-row">
           <div class="field">

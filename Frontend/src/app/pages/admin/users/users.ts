@@ -24,10 +24,11 @@ export class AdminUsersComponent implements OnInit {
 
   loadUsers(): void {
     this.loading.set(true);
-    const request = this.showAll() ? this.quizService.getUsers() : this.quizService.getLoggedInUsers();
+    const request = this.showAll() ? this.quizService.getUsers('candidate') : this.quizService.getLoggedInUsers();
     request.subscribe({
       next: (res) => {
-        this.users.set(res.users);
+        const filtered = res.users.filter((u: any) => u.role === 'candidate');
+        this.users.set(filtered);
         this.loading.set(false);
       },
       error: () => this.loading.set(false)
@@ -37,6 +38,20 @@ export class AdminUsersComponent implements OnInit {
   toggleFilter(showAll: boolean): void {
     this.showAll.set(showAll);
     this.loadUsers();
+  }
+
+  deleteUser(userId: string): void {
+    if (confirm('Are you sure you want to permanently delete this student user?')) {
+      this.quizService.deleteUser(userId).subscribe({
+        next: () => {
+          this.loadUsers();
+        },
+        error: (err) => {
+          console.error('Failed to delete user', err);
+          alert('Failed to delete student user.');
+        }
+      });
+    }
   }
 
   logout(): void {

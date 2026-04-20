@@ -42,6 +42,10 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/admin/manage-groups/manage-groups').then(m => m.ManageGroupsComponent)
       },
       {
+        path: 'hr-users',
+        loadComponent: () => import('./pages/admin/hr-users/hr-users').then(m => m.AdminHrUsersComponent)
+      },
+      {
         path: 'submissions/:submissionId',
         loadComponent: () => import('./pages/admin/submission-detail/submission-detail').then(m => m.SubmissionDetailComponent)
       },
@@ -110,10 +114,6 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/candidate/dashboard/dashboard').then(m => m.CandidateDashboardComponent)
       },
       {
-        path: 'quiz/:quizId',
-        loadComponent: () => import('./pages/candidate/take-quiz/take-quiz').then(m => m.TakeQuizComponent)
-      },
-      {
         path: 'profile',
         loadComponent: () => import('./pages/candidate/profile/profile').then(m => m.CandidateProfileComponent)
       },
@@ -122,6 +122,13 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/candidate/results/results').then(m => m.CandidateResultsComponent)
       },
     ]
+  },
+
+  // Standalone Candidate Routes (Maximized, no sidebar)
+  {
+    path: 'candidate/quiz/:quizId',
+    canActivate: [candidateGuard],
+    loadComponent: () => import('./pages/candidate/take-quiz/take-quiz').then(m => m.TakeQuizComponent)
   },
 
   // Backward compat: old student routes redirect to candidate

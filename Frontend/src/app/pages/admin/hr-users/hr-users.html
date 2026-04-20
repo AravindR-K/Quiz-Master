@@ -1,0 +1,85 @@
+<div class="page-container animate-fade-in">
+  <div class="page-header">
+    <h1>HR Users</h1>
+    <p class="page-subtitle">Manage HR Staff platform access and identity</p>
+  </div>
+
+  @if (error()) {
+    <div class="alert alert-error"><span class="material-symbols-rounded">error</span> {{ error() }}</div>
+  }
+  @if (success()) {
+    <div class="alert alert-success"><span class="material-symbols-rounded">check_circle</span> {{ success() }}</div>
+  }
+
+  <div class="card card-padding form-card" style="margin-bottom: 40px;">
+    <h2 class="section-title">Add HR User</h2>
+    <form (ngSubmit)="createHRUser()" class="group-form">
+      <div class="form-group row-align">
+        <div class="input-container">
+          <span class="material-symbols-rounded block-icon">badge</span>
+          <input class="form-input" [ngModel]="newName()" (ngModelChange)="newName.set($event)" name="name" placeholder="Full Name" required>
+        </div>
+        <div class="input-container">
+          <span class="material-symbols-rounded block-icon">mail</span>
+          <input class="form-input" type="email" [ngModel]="newEmail()" (ngModelChange)="newEmail.set($event)" name="email" placeholder="Email Address" required>
+        </div>
+        <div class="input-container">
+          <span class="material-symbols-rounded block-icon">lock</span>
+          <input class="form-input" type="password" [ngModel]="newPassword()" (ngModelChange)="newPassword.set($event)" name="password" placeholder="Password" required>
+        </div>
+        
+        <button type="submit" class="btn btn-primary" [disabled]="creating() || !newName().trim() || !newEmail().trim() || !newPassword().trim()">
+          @if (creating()) {
+            <span class="spinner"></span>
+          } @else {
+            <span class="material-symbols-rounded">person_add</span> Add HR
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <h2 class="section-title">Existing HR Users</h2>
+  @if (loading()) {
+    <div class="loading-state">
+      <div class="loader"></div>
+    </div>
+  } @else if (hrUsers().length === 0) {
+    <div class="empty-state">
+      <span class="material-symbols-rounded empty-icon">manage_accounts</span>
+      <h3>No HR users available</h3>
+      <p>Add your first HR user above</p>
+    </div>
+  } @else {
+    <div class="groups-grid">
+      @for (user of hrUsers(); track user._id) {
+        <div class="group-card">
+          <div class="group-icon-wrapper">
+            <span class="material-symbols-rounded">admin_panel_settings</span>
+          </div>
+          <div class="group-details" style="flex: 1;">
+            @if (editingId() === user._id) {
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <input type="text" class="form-input form-input-small" [ngModel]="editName()" (ngModelChange)="editName.set($event)" placeholder="Name" autofocus>
+                <input type="email" class="form-input form-input-small" [ngModel]="editEmail()" (ngModelChange)="editEmail.set($event)" placeholder="Email">
+                <input type="password" class="form-input form-input-small" [ngModel]="editPassword()" (ngModelChange)="editPassword.set($event)" placeholder="New Password (optional)">
+              </div>
+            } @else {
+              <h4>{{ user.name }}</h4>
+              <p style="margin: 4px 0 0; font-size: 13px; color: var(--text-muted);">{{ user.email }}</p>
+            }
+          </div>
+          <div class="group-actions" style="display: flex; gap: 8px;">
+            @if (editingId() === user._id) {
+              <button class="action-btn text-success" (click)="saveEdit(user._id)" title="Save"><span class="material-symbols-rounded">check</span></button>
+              <button class="action-btn text-danger" (click)="cancelEdit()" title="Cancel"><span class="material-symbols-rounded">close</span></button>
+            } @else {
+              <button class="action-btn" (click)="startEdit(user)" title="Edit"><span class="material-symbols-rounded">edit</span></button>
+              <button class="action-btn text-danger" (click)="deleteHRUser(user._id)" title="Delete"><span class="material-symbols-rounded">delete</span></button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

@@ -98,6 +98,58 @@
     }
   });
 
+  // @route   PUT /api/admin/users/:userId
+  // @desc    Edit a user (specifically for HR users to edit email/password)
+  // @access  Admin
+  router.put('/users/:userId', async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { email, password, name, group } = req.body;
+
+      const user = await User.findById(userId);
+      if (!user) return res.status(404).json({ message: 'User not found' });
+
+      // Ensure we don't accidentally edit an admin user here for safety
+      if (user.role === 'admin') {
+        return res.status(403).json({ message: 'Cannot edit admin users through this endpoint' });
+      }
+
+      if (email) user.email = email;
+      if (password) user.password = password; // Will be hashed by pre-save hook
+      if (name) user.name = name;
+      if (group !== undefined) user.group = group;
+
+      await user.save();
+
+      res.json({ message: 'User updated successfully', user: { id: user._id, name: user.name, email: user.email, role: user.role } });
+    } catch (error) {
+      if (error.code === 11000) {
+        return res.status(400).json({ message: 'Email already exists' });
+      }
+      res.status(500).json({ message: 'Server error', error: error.message });
+    }
+  });
+
+  // @route   PUT /api/admin/users/:userId/group
+  // @desc    Assign user to a group explicitly
+  // @access  Admin
+  router.put('/users/:userId/group', async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { group } = req.body;
+
+      const user = await User.findById(userId);
+      if (!user) return res.status(404).json({ message: 'User not found' });
+      
+      user.group = group || 'General';
+      await user.save();
+
+      res.json({ message: 'User assigned to group successfully', user });
+    } catch (error) {
+      res.status(500).json({ message: 'Server error', error: error.message });
+    }
+  });
+
   // @route   GET /api/admin/users/:userId/history
   // @desc    Get a user's test history
   // @access  Admin
@@ -602,10 +654,9 @@
       const correctStr = correct.toString().trim();
       const correctArr = correctStr.split(',').map(s => s.trim());
 
-      // 🔥 convert text → index
+      // Save exact literal text of correct answer
       const correctAnswers = options
-        .map((opt, index) => correctArr.includes(opt) ? index.toString() : null)
-        .filter(val => val !== null);
+        .filter(opt => correctArr.includes(opt));
 
       if (correctAnswers.length === 0) {
         throw new Error(`Correct answer "${correctStr}" not matching options`);

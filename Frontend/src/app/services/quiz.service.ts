@@ -35,6 +35,10 @@
       return this.http.delete(`${this.adminUrl}/users/${userId}`);
     }
 
+    editUser(userId: string, data: { name?: string; email?: string; password?: string }): Observable<any> {
+      return this.http.put(`${this.adminUrl}/users/${userId}`, data);
+    }
+
     getUserHistory(userId: string): Observable<any> {
       return this.http.get(`${this.adminUrl}/users/${userId}/history`);
     }
@@ -178,5 +182,9 @@
 
     deleteGroup(name: string): Observable<any> {
       return this.http.delete(`${this.getBaseUrl()}/groups/${encodeURIComponent(name)}`);
+    }
+
+    assignUserGroup(userId: string, groupName: string): Observable<any> {
+      return this.http.put(`${this.getBaseUrl()}/users/${userId}/group`, { group: groupName });
     }
   }

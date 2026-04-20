@@ -1,4 +1,4 @@
-import { Component, signal, OnInit } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -11,53 +11,39 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './register.html',
   styleUrl: './register.css'
 })
-export class RegisterComponent implements OnInit {
+export class RegisterComponent {
   name = '';
   email = '';
   password = '';
   confirmPassword = '';
-  group = '';
-  availableGroups = signal<string[]>([]);
-  error = signal<string>('');
-  loading = signal<boolean>(false);
+  
+  loading = signal(false);
+  error = signal('');
 
   constructor(private authService: AuthService, private router: Router) {}
-
-  ngOnInit(): void {
-    this.authService.getRegistrationGroups().subscribe({
-      next: (res) => this.availableGroups.set(res.groups || []),
-      error: () => console.error('Failed to load groups for registration')
-    });
-  }
 
   onSubmit(): void {
     if (!this.name || !this.email || !this.password || !this.confirmPassword) {
       this.error.set('Please fill in all fields');
       return;
     }
-
+    
     if (this.password !== this.confirmPassword) {
       this.error.set('Passwords do not match');
-      return;
-    }
-
-    if (this.password.length < 6) {
-      this.error.set('Password must be at least 6 characters');
       return;
     }
 
     this.loading.set(true);
     this.error.set('');
 
-    this.authService.register(this.name, this.email, this.password, this.group).subscribe({
+    this.authService.register(this.name, this.email, this.password, 'General').subscribe({
       next: () => {
         this.loading.set(false);
-        alert('Registration successful! Please sign in.');
         this.router.navigate(['/login']);
       },
       error: (err) => {
+        this.error.set(err.error?.message || 'Registration failed');
         this.loading.set(false);
-        this.error.set(err.error?.message || 'Registration failed. Please try again.');
       }
     });
   }
