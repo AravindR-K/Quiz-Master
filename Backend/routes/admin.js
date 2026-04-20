@@ -306,6 +306,214 @@
     }
   });
 
+  // @route   POST /api/admin/quiz/generate-ai
+  // @desc    Generate quiz using local Ollama LLM — AI determines title, timer, and questions from prompt
+  // @access  Admin
+  router.post('/quiz/generate-ai', async (req, res) => {
+    try {
+      const { prompt, difficulty, assignToAll, assignees, assignedGroups } = req.body;
+
+      if (!prompt || !prompt.trim()) {
+        return res.status(400).json({ message: 'Please provide a prompt describing the quiz you want.' });
+      }
+
+      const ollamaUrl = process.env.OLLAMA_URL || 'http://127.0.0.1:11434';
+      const ollamaModel = process.env.OLLAMA_MODEL || 'llama3.2';
+      const diffLevel = difficulty || 'medium';
+
+      const aiPrompt = `Based on this request: "${prompt}"
+
+Generate a quiz at ${diffLevel} difficulty level. You must determine:
+1. A short quiz title (max 5 words)
+2. A short topic label (max 3 words, e.g. "Computer Networks", "Data Structures")
+3. A reasonable time limit in minutes
+4. The appropriate number of questions
+
+CRITICAL RULES:
+- Each question must have exactly 4 options.
+- The "correct" field MUST contain the EXACT FULL TEXT of the correct option. DO NOT write "option1" or "option2" — write the actual answer text.
+- For multiple correct answers, comma-separate the full text of each correct option.
+- Return ONLY a valid JSON object, no markdown fences, no explanation.
+
+EXAMPLE (notice "correct" contains the actual answer text, NOT "option1"):
+{
+  "title": "JavaScript Basics",
+  "topic": "JavaScript",
+  "timer": 10,
+  "questions": [
+    {
+      "question": "What does DOM stand for?",
+      "option1": "Document Object Model",
+      "option2": "Data Object Manager",
+      "option3": "Digital Output Mode",
+      "option4": "Document Oriented Markup",
+      "correct": "Document Object Model"
+    }
+  ]
+}
+
+IMPORTANT: The "correct" value must be the EXACT TEXT of the option, not the option key. Output ONLY the JSON.`;
+
+      console.log(`Calling Ollama at ${ollamaUrl}/api/chat with model ${ollamaModel}...`);
+
+      const ollamaResponse = await fetch(`${ollamaUrl}/api/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: ollamaModel,
+          messages: [
+            { role: 'system', content: 'You are a quiz generator. Output ONLY valid JSON. The "correct" field must always contain the EXACT TEXT of the correct answer option, never "option1" or "option2".' },
+            { role: 'user', content: aiPrompt }
+          ],
+          stream: false,
+          options: { temperature: 0.7 }
+        })
+      });
+
+      if (!ollamaResponse.ok) {
+        const errText = await ollamaResponse.text();
+        console.error('Ollama error:', errText);
+        return res.status(500).json({ message: `Ollama error (${ollamaResponse.status}): Make sure Ollama is running with "${ollamaModel}" model pulled.` });
+      }
+
+      const ollamaData = await ollamaResponse.json();
+      let responseText = (ollamaData.message?.content || '').trim();
+
+      console.log('Ollama raw response length:', responseText.length);
+
+      // Strip markdown code fences if present
+      if (responseText.startsWith('```')) {
+        responseText = responseText.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim();
+      }
+
+      // Try to extract JSON object from response
+      const jsonObjMatch = responseText.match(/\{[\s\S]*\}/);
+      if (jsonObjMatch) {
+        responseText = jsonObjMatch[0];
+      }
+
+      let aiResult;
+      try {
+        aiResult = JSON.parse(responseText);
+      } catch (parseErr) {
+        console.error('AI response parse error:', parseErr);
+        console.error('Raw response:', responseText.substring(0, 500));
+        return res.status(500).json({ message: 'Failed to parse AI response. The LLM did not return valid JSON. Please try again.' });
+      }
+
+      // Extract metadata from AI response
+      const quizTitle = aiResult.title || 'AI Generated Quiz';
+      const quizTopic = aiResult.topic || quizTitle;
+      const quizTimer = parseInt(aiResult.timer) || 15;
+      const aiQuestions = aiResult.questions;
+
+      if (!Array.isArray(aiQuestions) || aiQuestions.length === 0) {
+        return res.status(500).json({ message: 'AI returned empty or invalid questions. Please try again.' });
+      }
+
+      // Parse AI output into our question format
+      const parsedQuestions = aiQuestions.map((q) => {
+        const options = [
+          (q.option1 || '').toString().trim(),
+          (q.option2 || '').toString().trim(),
+          (q.option3 || '').toString().trim(),
+          (q.option4 || '').toString().trim()
+        ].filter(o => o.length > 0);
+
+        // Build a map for "option1" -> actual text fallback
+        const optionKeyMap = {
+          'option1': options[0] || '',
+          'option2': options[1] || '',
+          'option3': options[2] || '',
+          'option4': options[3] || ''
+        };
+
+        const correctStr = (q.correct || '').toString().trim();
+        const correctArr = correctStr.split(',').map(s => s.trim());
+
+        // First: try to match correct values against actual option text
+        let correctAnswers = options.filter(opt => correctArr.includes(opt));
+
+        // Fallback: if LLM returned "option1", "option2" keys instead of text
+        if (correctAnswers.length === 0) {
+          correctAnswers = correctArr
+            .map(c => optionKeyMap[c.toLowerCase()] || '')
+            .filter(c => c.length > 0);
+        }
+
+        // Last resort: if still empty, try case-insensitive match
+        if (correctAnswers.length === 0) {
+          correctAnswers = options.filter(opt =>
+            correctArr.some(c => c.toLowerCase() === opt.toLowerCase())
+          );
+        }
+
+        // Absolute fallback: use first option
+        if (correctAnswers.length === 0 && options.length > 0) {
+          console.warn(`Warning: Could not match correct answer "${correctStr}" for question "${q.question}". Using first option as fallback.`);
+          correctAnswers.push(options[0]);
+        }
+
+        return {
+          question: (q.question || '').toString().trim(),
+          options,
+          correctAnswers,
+          type: correctAnswers.length > 1 ? 'mcq' : 'single'
+        };
+      }).filter(q => q.question && q.options.length === 4 && q.correctAnswers.length > 0);
+
+      if (parsedQuestions.length === 0) {
+        return res.status(500).json({ message: 'Could not parse any valid questions from AI response.' });
+      }
+
+      // Log parsed questions for debugging
+      console.log('Parsed questions sample:', JSON.stringify(parsedQuestions[0], null, 2));
+
+      // Create quiz in DB
+      const quiz = await Quiz.create({
+        title: quizTitle,
+        timer: quizTimer,
+        totalQuestions: parsedQuestions.length,
+        createdBy: req.user._id,
+        category: quizTopic,
+        difficulty: diffLevel,
+        topic: quizTopic,
+        assignToAll: assignToAll === 'true' || assignToAll === true,
+        assignees: assignees || [],
+        assignedGroups: assignedGroups || [],
+        generatedByAI: true
+      });
+
+      const questionDocs = parsedQuestions.map(q => ({
+        quizId: quiz._id,
+        question: q.question,
+        options: q.options,
+        correctAnswers: q.correctAnswers,
+        type: q.type
+      }));
+
+      await Question.insertMany(questionDocs);
+
+      res.status(201).json({
+        message: 'AI Quiz generated successfully',
+        quiz: {
+          id: quiz._id,
+          title: quiz.title,
+          timer: quiz.timer,
+          totalQuestions: parsedQuestions.length,
+          category: quiz.category
+        },
+        questions: parsedQuestions
+      });
+    } catch (error) {
+      console.error('AI generation error:', error);
+      if (error.cause?.code === 'ECONNREFUSED') {
+        return res.status(500).json({ message: 'Cannot connect to Ollama. Make sure Ollama is running (ollama serve).' });
+      }
+      res.status(500).json({ message: 'AI generation failed: ' + (error.message || 'Unknown error') });
+    }
+  });
+
   // @route   POST /api/admin/quiz/create-manual
   // @desc    Create quiz manually (for AI-generated quizzes or manual entry)
   // @access  Admin

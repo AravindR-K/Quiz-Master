@@ -55,6 +55,10 @@
       return this.http.post(`${this.adminUrl}/quiz/create-manual`, data);
     }
 
+    generateAIQuiz(data: any): Observable<any> {
+      return this.http.post(`${this.adminUrl}/quiz/generate-ai`, data);
+    }
+
     getAdminQuizzes(): Observable<any> {
       return this.http.get(`${this.adminUrl}/quizzes`);
     }

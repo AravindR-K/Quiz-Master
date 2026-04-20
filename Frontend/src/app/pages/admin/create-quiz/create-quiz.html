@@ -4,7 +4,21 @@
       <span class="material-symbols-rounded">arrow_back</span> Back to Quizzes
     </a>
     <h1>Create New Quiz</h1>
-    <p class="page-subtitle">Upload an Excel file with questions to create a quiz</p>
+    <p class="page-subtitle">Choose a method to create your quiz</p>
+  </div>
+
+  <!-- Mode Toggle -->
+  <div class="mode-toggle">
+    <button class="mode-btn" [class.active]="mode() === 'excel'" (click)="setMode('excel')">
+      <span class="material-symbols-rounded">upload_file</span>
+      <span class="mode-label">Excel Upload</span>
+      <span class="mode-desc">Upload a spreadsheet</span>
+    </button>
+    <button class="mode-btn" [class.active]="mode() === 'ai'" (click)="setMode('ai')">
+      <span class="material-symbols-rounded">auto_awesome</span>
+      <span class="mode-label">AI Generate</span>
+      <span class="mode-desc">Let AI create questions</span>
+    </button>
   </div>
 
   @if (error()) {
@@ -16,37 +30,82 @@
 
   <div class="card card-padding form-card">
     <form (ngSubmit)="onSubmit()" class="quiz-form">
-      <div class="form-group">
-        <label class="form-label">Quiz Title *</label>
-        <input class="form-input" [(ngModel)]="title" name="title" placeholder="e.g. JavaScript Basics">
-      </div>
 
-      <div class="form-row">
+      <!-- ============ EXCEL MODE ============ -->
+      @if (mode() === 'excel') {
         <div class="form-group">
-          <label class="form-label">Time Limit (minutes) *</label>
-          <input class="form-input" type="number" [(ngModel)]="timer" name="timer" min="1">
+          <label class="form-label">Quiz Title *</label>
+          <input class="form-input" [(ngModel)]="title" name="title" placeholder="e.g. JavaScript Basics">
         </div>
-        <div class="form-group">
-          <label class="form-label">Difficulty</label>
-          <select class="form-select" [(ngModel)]="difficulty" name="difficulty">
-            <option value="easy">Easy</option>
-            <option value="medium">Medium</option>
-            <option value="hard">Hard</option>
-          </select>
-        </div>
-      </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Category</label>
-          <input class="form-input" [(ngModel)]="category" name="category" placeholder="e.g. Programming">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Time Limit (minutes) *</label>
+            <input class="form-input" type="number" [(ngModel)]="timer" name="timer" min="1">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Difficulty</label>
+            <select class="form-select" [(ngModel)]="difficulty" name="difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
         </div>
+
         <div class="form-group">
           <label class="form-label">Topic</label>
-          <input class="form-input" [(ngModel)]="topic" name="topic" placeholder="e.g. Arrays & Loops">
+          <input class="form-input" [(ngModel)]="topic" name="topicExcel" placeholder="e.g. Arrays & Loops">
         </div>
-      </div>
 
+        <div class="form-group">
+          <label class="form-label">Questions File (Excel) *</label>
+          <div class="file-upload" (click)="fileInput.click()">
+            <input #fileInput type="file" accept=".xlsx,.xls" (change)="onFileSelected($event)" hidden>
+            <span class="material-symbols-rounded upload-icon">upload_file</span>
+            @if (fileName()) {
+              <span class="file-name">{{ fileName() }}</span>
+            } @else {
+              <span class="file-placeholder">Click to select an Excel file</span>
+            }
+          </div>
+          <p class="format-hint">
+            <span class="material-symbols-rounded" style="font-size:14px">info</span>
+            Format: Question | Option1 | Option2 | Option3 | Option4 | Correct
+          </p>
+        </div>
+      }
+
+      <!-- ============ AI MODE ============ -->
+      @if (mode() === 'ai') {
+        <div class="ai-section animate-fade-in">
+          <div class="ai-badge">
+            <span class="material-symbols-rounded">auto_awesome</span>
+            AI-Powered Generation
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Describe Your Quiz *</label>
+            <textarea class="form-input form-textarea" [(ngModel)]="topic" name="topic" rows="4"
+                      placeholder="e.g. Generate a quiz on Operating Systems covering process scheduling, memory management, and file systems. Include 10 questions that a student can answer in 15 minutes."></textarea>
+            <p class="format-hint">
+              <span class="material-symbols-rounded" style="font-size:14px">lightbulb</span>
+              Tip: Mention the topic, number of questions, and time limit in your prompt. AI will auto-generate the quiz title, timer, and questions.
+            </p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Difficulty Level</label>
+            <select class="form-select" [(ngModel)]="difficulty" name="difficultyAi">
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+        </div>
+      }
+
+      <!-- Assignment (shared) -->
       <div class="form-group">
         <label class="form-label">Assign To</label>
         <select class="form-select" [(ngModel)]="assignmentType" name="assignmentType">
@@ -59,13 +118,12 @@
       @if (assignmentType === 'users') {
         <div class="form-group assignment-box">
           <label class="form-label">Search Candidates</label>
-          <input class="form-input" type="text" [(ngModel)]="userSearchQuery" name="userSearchQuery" 
+          <input class="form-input" type="text" [(ngModel)]="userSearchQuery" name="userSearchQuery"
                  (input)="onUserSearch()" placeholder="Search by name or email...">
-          
           <div class="list-container mt-2">
             @for (user of filteredUsers; track user._id) {
               <div class="list-item" (click)="toggleUserSelection(user._id)">
-                <input type="checkbox" [checked]="selectedUsers.includes(user._id)" 
+                <input type="checkbox" [checked]="selectedUsers.includes(user._id)"
                        (change)="toggleUserSelection(user._id)">
                 <div class="item-details">
                   <span class="item-name">{{ user.name }}</span>
@@ -74,7 +132,7 @@
               </div>
             }
             @if (filteredUsers.length === 0) {
-              <div class="empty-state">No candidates found</div>
+              <div class="empty-list">No candidates found</div>
             }
           </div>
         </div>
@@ -86,7 +144,7 @@
           <div class="list-container">
             @for (group of availableGroups; track group) {
               <div class="list-item" (click)="toggleGroupSelection(group)">
-                <input type="checkbox" [checked]="selectedGroups.includes(group)" 
+                <input type="checkbox" [checked]="selectedGroups.includes(group)"
                        (change)="toggleGroupSelection(group)">
                 <div class="item-details">
                   <span class="item-name">{{ group }}</span>
@@ -94,28 +152,21 @@
               </div>
             }
             @if (availableGroups.length === 0) {
-              <div class="empty-state">No groups found</div>
+              <div class="empty-list">No groups found</div>
             }
           </div>
         </div>
       }
 
-      <div class="form-group">
-        <label class="form-label">Questions File (Excel) *</label>
-        <div class="file-upload" (click)="fileInput.click()">
-          <input #fileInput type="file" accept=".xlsx,.xls" (change)="onFileSelected($event)" hidden>
-          <span class="material-symbols-rounded upload-icon">upload_file</span>
-          @if (fileName()) {
-            <span class="file-name">{{ fileName() }}</span>
-          } @else {
-            <span class="file-placeholder">Click to select an Excel file</span>
-          }
-        </div>
-      </div>
-
-      <button type="submit" class="btn btn-primary btn-lg" [disabled]="loading()" style="width: 100%;">
-        @if (loading()) {
+      <!-- Submit -->
+      <button type="submit" class="btn btn-primary btn-lg submit-btn" [disabled]="loading()">
+        @if (loading() && mode() === 'ai') {
+          <div class="spinner"></div>
+          <span class="ai-loading-text">AI is generating your quiz...</span>
+        } @else if (loading()) {
           <div class="spinner"></div> Creating...
+        } @else if (mode() === 'ai') {
+          <span class="material-symbols-rounded">auto_awesome</span> Generate Quiz with AI
         } @else {
           <span class="material-symbols-rounded">add_circle</span> Create Quiz
         }
