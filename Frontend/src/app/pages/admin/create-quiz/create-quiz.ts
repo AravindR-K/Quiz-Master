@@ -19,7 +19,7 @@ export class CreateQuizComponent implements OnInit {
   title = '';
   timer = 30;
   difficulty = 'medium';
-  topic = '';
+  category = '';
   selectedFile: File | null = null;
   fileName = signal('');
 
@@ -125,7 +125,7 @@ export class CreateQuizComponent implements OnInit {
     formData.append('timer', this.timer.toString());
     formData.append('questionsFile', this.selectedFile);
     if (this.difficulty) formData.append('difficulty', this.difficulty);
-    if (this.topic) formData.append('topic', this.topic);
+    if (this.category) formData.append('category', this.category);
 
     this.appendAssignment(formData);
 
@@ -143,14 +143,14 @@ export class CreateQuizComponent implements OnInit {
   }
 
   private submitAI(): void {
-    if (!this.topic.trim()) { this.error.set('Please describe your quiz topic'); return; }
+    if (!this.category.trim()) { this.error.set('Please describe your quiz topic/category'); return; }
 
     this.loading.set(true);
     this.error.set('');
     this.success.set('');
 
     const data: any = {
-      prompt: this.topic,
+      prompt: this.category,
       difficulty: this.difficulty
     };
 
@@ -162,6 +162,10 @@ export class CreateQuizComponent implements OnInit {
     } else if (this.assignmentType === 'groups') {
       data.assignToAll = false;
       data.assignedGroups = this.selectedGroups;
+    } else if (this.assignmentType === 'none') {
+      data.assignToAll = false;
+      data.assignees = [];
+      data.assignedGroups = [];
     }
 
     this.quizService.generateAIQuiz(data).subscribe({
@@ -186,6 +190,10 @@ export class CreateQuizComponent implements OnInit {
     } else if (this.assignmentType === 'groups') {
       formData.append('assignToAll', 'false');
       formData.append('assignedGroups', JSON.stringify(this.selectedGroups));
+    } else if (this.assignmentType === 'none') {
+      formData.append('assignToAll', 'false');
+      formData.append('assignees', JSON.stringify([]));
+      formData.append('assignedGroups', JSON.stringify([]));
     }
   }
 }

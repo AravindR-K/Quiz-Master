@@ -46,10 +46,6 @@ const quizSchema = new mongoose.Schema({
     enum: ['easy', 'medium', 'hard'],
     default: 'medium'
   },
-  topic: {  
-    type: String,
-    trim: true
-  },
   generatedByAI: {
     type: Boolean,
     default: false

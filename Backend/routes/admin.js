@@ -98,6 +98,37 @@
     }
   });
 
+  // @route   PUT /api/admin/users/:userId/level
+  // @desc    Update a candidate's level (beginner/intermediate/advanced/expert)
+  // @access  Admin, HR
+  router.put('/users/:userId/level', async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { level } = req.body;
+
+      const validLevels = ['beginner', 'intermediate', 'advanced', 'expert'];
+      if (!level || !validLevels.includes(level)) {
+        return res.status(400).json({ message: 'Invalid level. Must be one of: beginner, intermediate, advanced, expert' });
+      }
+
+      const user = await User.findById(userId);
+      if (!user) return res.status(404).json({ message: 'User not found' });
+      if (user.role !== 'candidate') return res.status(400).json({ message: 'Level can only be set for candidates' });
+
+      const previousLevel = user.level || 'beginner';
+      user.level = level;
+      await user.save();
+
+      res.json({
+        message: `Level changed from ${previousLevel} to ${level}`,
+        user: { _id: user._id, name: user.name, level: user.level },
+        previousLevel,
+        newLevel: level
+      });
+    } catch (error) {
+      res.status(500).json({ message: 'Server error', error: error.message });
+    }
+  });
   // @route   PUT /api/admin/users/:userId
   // @desc    Edit a user (specifically for HR users to edit email/password)
   // @access  Admin
@@ -477,7 +508,6 @@ IMPORTANT: The "correct" value must be the EXACT TEXT of the option, not the opt
         createdBy: req.user._id,
         category: quizTopic,
         difficulty: diffLevel,
-        topic: quizTopic,
         assignToAll: assignToAll === 'true' || assignToAll === true,
         assignees: assignees || [],
         assignedGroups: assignedGroups || [],
@@ -632,7 +662,7 @@ IMPORTANT: The "correct" value must be the EXACT TEXT of the option, not the opt
         });
       }
 
-      const { title, timer, category, difficulty, topic, assignToAll, assignees, assignedGroups, questions } = req.body;
+      const { title, timer, category, difficulty, assignToAll, assignees, assignedGroups, questions } = req.body;
 
       // Update quiz metadata
       const updateData = {};
@@ -640,7 +670,6 @@ IMPORTANT: The "correct" value must be the EXACT TEXT of the option, not the opt
       if (timer) updateData.timer = parseInt(timer);
       if (category) updateData.category = category;
       if (difficulty) updateData.difficulty = difficulty;
-      if (topic !== undefined) updateData.topic = topic;
       if (assignToAll !== undefined) updateData.assignToAll = assignToAll;
       if (assignees) updateData.assignees = assignees;
       if (assignedGroups) updateData.assignedGroups = assignedGroups;
@@ -893,4 +922,98 @@ IMPORTANT: The "correct" value must be the EXACT TEXT of the option, not the opt
     return a === b;
   }
 
-  module.exports = router;
+// @route   GET /api/admin/quiz/:quizId/assign-candidates
+// @desc    Get candidates filtered by quiz category + difficulty using per-topic comfortLevel
+// @access  Admin
+router.get('/quiz/:quizId/assign-candidates', async (req, res) => {
+  try {
+    const quiz = await Quiz.findById(req.params.quizId);
+    if (!quiz) return res.status(404).json({ message: 'Quiz not found' });
+
+    const allCandidates = await User.find({ role: 'candidate' });
+    
+    // Quiz parameters
+    const quizDifficulty = quiz.difficulty ? quiz.difficulty.toLowerCase() : '';
+    const quizCategory = quiz.category ? quiz.category.toLowerCase() : '';
+    
+    // Comfort level → proficiency mapping:
+    // 0-25   = beginner
+    // 26-50  = intermediate
+    // 51-75  = advanced
+    // 76-100 = expert
+    function comfortToProficiency(comfort) {
+      if (comfort <= 25) return 'beginner';
+      if (comfort <= 50) return 'intermediate';
+      if (comfort <= 75) return 'advanced';
+      return 'expert';
+    }
+    
+    // Quiz difficulty → required proficiency mapping:
+    // Easy   → beginner
+    // Medium → intermediate, advanced
+    // Hard   → expert
+    function getRequiredProficiencies(difficulty) {
+      if (difficulty === 'easy') return ['beginner'];
+      if (difficulty === 'medium') return ['intermediate', 'advanced'];
+      if (difficulty === 'hard') return ['expert'];
+      return ['beginner', 'intermediate', 'advanced', 'expert']; // no difficulty = all
+    }
+    
+    const requiredProficiencies = getRequiredProficiencies(quizDifficulty);
+    const filtered = [];
+    
+    for (const candidate of allCandidates) {
+      // If quiz has no category, show all candidates (no topic filter)
+      if (!quizCategory) {
+        filtered.push({
+          _id: candidate._id,
+          name: candidate.name,
+          email: candidate.email,
+          level: candidate.level,
+          topicsOfInterest: candidate.topicsOfInterest
+        });
+        continue;
+      }
+      
+      // Check if candidate has a matching topic in their interests
+      if (!candidate.topicsOfInterest || candidate.topicsOfInterest.length === 0) continue;
+      
+      const matchingTopic = candidate.topicsOfInterest.find(t => {
+        const ct = t.topic.toLowerCase();
+        return ct.includes(quizCategory) || quizCategory.includes(ct);
+      });
+      
+      if (!matchingTopic) continue; // Candidate has no interest in this category
+      
+      // Map their comfort level for this specific topic to a proficiency
+      const candidateProficiency = comfortToProficiency(matchingTopic.comfortLevel);
+      
+      // Check if their proficiency matches the quiz difficulty requirement
+      if (!requiredProficiencies.includes(candidateProficiency)) continue;
+      
+      filtered.push({
+        _id: candidate._id,
+        name: candidate.name,
+        email: candidate.email,
+        level: candidate.level,
+        topicsOfInterest: candidate.topicsOfInterest,
+        matchedTopic: matchingTopic.topic,
+        matchedComfort: matchingTopic.comfortLevel,
+        matchedProficiency: candidateProficiency
+      });
+    }
+    
+    const assignedIds = quiz.assignees ? quiz.assignees.map(id => id.toString()) : [];
+    
+    res.json({
+      quizTitle: quiz.title,
+      quizDifficulty: quiz.difficulty,
+      quizCategory: quiz.category,
+      assignedIds: assignedIds,
+      filteredCandidates: filtered
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+module.exports = router;

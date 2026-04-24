@@ -32,7 +32,16 @@ const userSchema = new mongoose.Schema({
   isLoggedIn: {
     type: Boolean,
     default: false
-  }
+  },
+  level: {
+    type: String,
+    enum: ['beginner', 'intermediate', 'advanced', 'expert'],
+    default: 'beginner'
+  },
+  topicsOfInterest: [{
+    topic: { type: String, required: true },
+    comfortLevel: { type: Number, min: 0, max: 100, required: true }
+  }]
 }, {
   timestamps: true
 });

@@ -17,7 +17,6 @@ export class EditQuizComponent implements OnInit {
   timer = 30;
   category = '';
   difficulty = 'medium';
-  topic = '';
   questions = signal<any[]>([]);
 
   loading = signal(true);
@@ -45,7 +44,6 @@ export class EditQuizComponent implements OnInit {
         this.timer = q.timer;
         this.category = q.category || '';
         this.difficulty = q.difficulty || 'medium';
-        this.topic = q.topic || '';
         this.questions.set(q.questions || []);
         this.locked.set(res.hasAttempts || false);
         this.loading.set(false);
@@ -87,7 +85,6 @@ onSave(): void {
     timer: this.timer,
     category: this.category,
     difficulty: this.difficulty,
-    topic: this.topic,
     questions: formattedQuestions
   }; // ✅ closes data object
 

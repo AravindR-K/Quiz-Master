@@ -58,6 +58,10 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/admin/create-quiz/create-quiz').then(m => m.CreateQuizComponent)
       },
       {
+        path: 'quiz/:quizId/assign',
+        loadComponent: () => import('./pages/admin/assign-quiz/assign-quiz').then(m => m.AssignQuizComponent)
+      },
+      {
         path: 'quiz/:quizId/edit',
         loadComponent: () => import('./pages/admin/edit-quiz/edit-quiz').then(m => m.EditQuizComponent)
       },

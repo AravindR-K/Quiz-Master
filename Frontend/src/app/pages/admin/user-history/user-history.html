@@ -12,10 +12,26 @@
     } @else {
       @if (user()) {
         <div class="student-header">
-          <div class="student-avatar">{{ user().name?.charAt(0) }}</div>
-          <div>
-            <h1>{{ user().name }}</h1>
-            <p>{{ user().email }}</p>
+          <div class="student-profile">
+            <div class="student-avatar">{{ user().name?.charAt(0) }}</div>
+            <div class="student-info">
+              <h1>{{ user().name }}</h1>
+              <p>{{ user().email }}</p>
+            </div>
+          </div>
+
+          <div class="student-level-control">
+            <span class="level-label">Candidate Level</span>
+            <div class="level-pills">
+              @for (lvl of levels; track lvl.value) {
+                <button class="level-pill"
+                        [class.active]="currentLevel() === lvl.value"
+                        [attr.data-level]="lvl.value"
+                        (click)="changeLevel(lvl.value)">
+                  {{ lvl.label }}
+                </button>
+              }
+            </div>
           </div>
         </div>
       }
@@ -69,3 +85,11 @@
     }
   </div>
 </div>
+
+<!-- Toast Notification -->
+@if (toast()) {
+  <div class="toast animate-fade-in" [class.toast-success]="toast()?.type === 'success'" [class.toast-error]="toast()?.type === 'error'">
+    <span class="material-symbols-rounded">{{ toast()?.type === 'success' ? 'check_circle' : 'error' }}</span>
+    {{ toast()?.message }}
+  </div>
+}

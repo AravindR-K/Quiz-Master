@@ -54,8 +54,8 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">Topic</label>
-          <input class="form-input" [(ngModel)]="topic" name="topicExcel" placeholder="e.g. Arrays & Loops">
+          <label class="form-label">Category</label>
+          <input class="form-input" [(ngModel)]="category" name="categoryExcel" placeholder="e.g. Java, Angular, Data Structures">
         </div>
 
         <div class="form-group">
@@ -86,7 +86,7 @@
 
           <div class="form-group">
             <label class="form-label">Describe Your Quiz *</label>
-            <textarea class="form-input form-textarea" [(ngModel)]="topic" name="topic" rows="4"
+            <textarea class="form-input form-textarea" [(ngModel)]="category" name="category" rows="4"
                       placeholder="e.g. Generate a quiz on Operating Systems covering process scheduling, memory management, and file systems. Include 10 questions that a student can answer in 15 minutes."></textarea>
             <p class="format-hint">
               <span class="material-symbols-rounded" style="font-size:14px">lightbulb</span>
@@ -109,6 +109,7 @@
       <div class="form-group">
         <label class="form-label">Assign To</label>
         <select class="form-select" [(ngModel)]="assignmentType" name="assignmentType">
+          <option value="none">None (Assign Later)</option>
           <option value="all">All Candidates</option>
           <option value="users">Individual People</option>
           <option value="groups">Specific Groups</option>

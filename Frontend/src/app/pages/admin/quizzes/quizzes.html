@@ -51,10 +51,10 @@
               {{ quiz.category || 'Uncategorized' }}
             </div>
           </div>
-          @if (quiz.topic) {
-            <div class="quiz-topic">{{ quiz.topic }}</div>
-          }
           <div class="quiz-card-actions">
+            <a [routerLink]="['/admin/quiz', quiz._id, 'assign']" class="btn btn-primary btn-sm">
+              <span class="material-symbols-rounded">person_add</span> Assign
+            </a>
             @if (quiz.attemptCount > 0) {
               <span class="attempted-badge">
                 <span class="material-symbols-rounded">lock</span>

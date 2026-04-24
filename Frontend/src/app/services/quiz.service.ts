@@ -43,6 +43,11 @@
       return this.http.get(`${this.adminUrl}/users/${userId}/history`);
     }
 
+    updateUserLevel(userId: string, level: string, role: string = 'admin'): Observable<any> {
+      const baseUrl = role === 'hr' ? this.hrUrl : this.adminUrl;
+      return this.http.put(`${baseUrl}/users/${userId}/level`, { level });
+    }
+
     getSubmissionDetails(submissionId: string): Observable<any> {
       return this.http.get(`${this.adminUrl}/submissions/${submissionId}`);
     }
@@ -73,6 +78,10 @@
 
     assignQuiz(quizId: string, data: any): Observable<any> {
       return this.http.put(`${this.adminUrl}/quiz/${quizId}/assign`, data);
+    }
+
+    getAssignCandidates(quizId: string): Observable<any> {
+      return this.http.get(`${this.adminUrl}/quiz/${quizId}/assign-candidates`);
     }
 
     deleteQuiz(quizId: string): Observable<any> {
@@ -153,6 +162,10 @@
 
     getCandidateProfile(): Observable<any> {
       return this.http.get(`${this.candidateUrl}/profile`);
+    }
+
+    updateCandidateProfile(data: any): Observable<any> {
+      return this.http.put(`${this.candidateUrl}/profile`, data);
     }
 
     getResultDetails(submissionId: string): Observable<any> {

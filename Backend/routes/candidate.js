@@ -254,4 +254,53 @@ function checkAnswersMatch(arr1, arr2) {
   return a === b;
 }
 
+// @route   GET /api/candidate/profile
+// @desc    Get candidate profile including topics of interest
+// @access  Candidate
+router.get('/profile', async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('-password');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// @route   PUT /api/candidate/profile
+// @desc    Update candidate profile (topics of interest)
+// @access  Candidate
+router.put('/profile', async (req, res) => {
+  try {
+    const { topicsOfInterest } = req.body;
+    
+    if (topicsOfInterest && !Array.isArray(topicsOfInterest)) {
+      return res.status(400).json({ message: 'Topics of interest must be an array' });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    
+    if (topicsOfInterest) {
+      user.topicsOfInterest = topicsOfInterest;
+    }
+    
+    await user.save();
+    
+    res.json({
+      message: 'Profile updated successfully',
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        level: user.level,
+        topicsOfInterest: user.topicsOfInterest
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 module.exports = router;

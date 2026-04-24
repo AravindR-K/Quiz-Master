@@ -24,18 +24,18 @@
         <div class="quiz-card card" [class.taken]="quiz.taken">
           <div class="quiz-card-header">
             <div class="quiz-icon-wrap" [class.completed]="quiz.taken">
-              <span class="material-symbols-rounded">{{ quiz.taken ? 'check_circle' : 'quiz' }}</span>
+              <span class="material-symbols-rounded">{{ quiz.taken ? 'task_alt' : 'description' }}</span>
             </div>
             <div class="quiz-meta">
               @if (quiz.category) {
-                <span class="badge badge-primary">{{ quiz.category }}</span>
+                <span class="badge badge-primary" title="{{ quiz.category }}">{{ quiz.category | uppercase }}</span>
               }
               @if (quiz.difficulty) {
-                <span class="badge" [ngClass]="{
-                  'badge-success': quiz.difficulty === 'Beginner',
-                  'badge-warning': quiz.difficulty === 'Intermediate',
-                  'badge-danger': quiz.difficulty === 'Advanced'
-                }">{{ quiz.difficulty }}</span>
+                <span class="badge difficulty-badge" [ngClass]="{
+                  'badge-success': quiz.difficulty.toLowerCase() === 'easy',
+                  'badge-warning': quiz.difficulty.toLowerCase() === 'medium',
+                  'badge-danger': quiz.difficulty.toLowerCase() === 'hard'
+                }">{{ quiz.difficulty | uppercase }}</span>
               }
             </div>
           </div>

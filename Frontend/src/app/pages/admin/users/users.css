@@ -146,11 +146,18 @@ color: var(--text-primary);
   flex: 1;
 }
 
+.name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
 .user-card-info h4 {
-color: var(--text-primary);
+  color: var(--text-primary);
   font-size: 15px;
   font-weight: 600;
-  margin: 0 0 4px;
+  margin: 0;
 }
 
 .user-card-info p {
@@ -210,6 +217,36 @@ color: var(--text-secondary);
 .text-danger:hover {
   background: rgba(239, 68, 68, 0.1);
   color: #ef4444;
+}
+
+.level-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+.level-badge[data-level="beginner"] {
+  background: rgba(148, 163, 184, 0.15);
+  color: #94a3b8;
+}
+
+.level-badge[data-level="intermediate"] {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+}
+
+.level-badge[data-level="advanced"] {
+  background: rgba(168, 85, 247, 0.15);
+  color: #a855f7;
+}
+
+.level-badge[data-level="expert"] {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
 }
 
 @media (max-width: 768px) {

@@ -22,8 +22,19 @@
 .student-header {
   display: flex;
   align-items: center;
-  gap: 20px;
+  justify-content: space-between;
   margin-bottom: 32px;
+  padding: 24px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.student-profile {
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
 
 .student-avatar {
@@ -34,19 +45,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-primary);
+  color: #ffffff;
   font-weight: 700;
   font-size: 28px;
 }
 
-.student-header h1 {
+.student-info h1 {
   font-size: 24px;
   font-weight: 700;
   color: var(--text-primary);
   margin: 0 0 4px;
 }
 
-.student-header p {
+.student-info p {
   color: var(--text-secondary);
   font-size: 14px;
   margin: 0;
@@ -218,4 +229,100 @@
 .content-wrapper {
   max-width: 1100px;
   margin: 0; /* force left alignment */
-} 
+}
+
+.student-level-control {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.level-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.level-pills {
+  display: flex;
+  background: rgba(0, 0, 0, 0.04);
+  padding: 4px;
+  border-radius: 12px;
+  gap: 4px;
+}
+
+.level-pill {
+  border: none;
+  background: transparent;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.level-pill:hover {
+  color: var(--text-primary);
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.level-pill.active {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.level-pill.active[data-level="beginner"] { color: #64748b; }
+.level-pill.active[data-level="intermediate"] { color: #3b82f6; }
+.level-pill.active[data-level="advanced"] { color: #a855f7; }
+.level-pill.active[data-level="expert"] { color: #f59e0b; }
+
+@media (max-width: 640px) {
+  .student-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+  }
+  .student-level-control {
+    align-items: flex-start;
+    width: 100%;
+  }
+  .level-pills {
+    width: 100%;
+    overflow-x: auto;
+  }
+}
+
+/* Toast Notification */
+.toast {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 500;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  color: #fff;
+}
+
+.toast-success {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.toast-error {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.toast .material-symbols-rounded {
+  font-size: 20px;
+}

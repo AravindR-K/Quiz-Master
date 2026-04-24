@@ -164,13 +164,12 @@ router.put('/quiz/:quizId', async (req, res) => {
       return res.status(403).json({ message: 'This quiz cannot be edited because it has already been attempted.', attemptCount });
     }
 
-    const { title, timer, category, difficulty, topic, assignToAll, assignees, assignedGroups, questions } = req.body;
+    const { title, timer, category, difficulty, assignToAll, assignees, assignedGroups, questions } = req.body;
     const updateData = {};
     if (title) updateData.title = title;
     if (timer) updateData.timer = parseInt(timer);
     if (category) updateData.category = category;
     if (difficulty) updateData.difficulty = difficulty;
-    if (topic !== undefined) updateData.topic = topic;
     if (assignToAll !== undefined) updateData.assignToAll = assignToAll;
     if (assignees) updateData.assignees = assignees;
     if (assignedGroups) updateData.assignedGroups = assignedGroups;
@@ -420,5 +419,38 @@ function checkAnswersMatch(arr1, arr2) {
   const b = arr2.map(x => x.toString().trim().toLowerCase()).sort().join('||');
   return a === b;
 }
+
+
+// @route   PUT /api/hr/users/:userId/level
+// @desc    Update a candidate's level
+// @access  HR
+router.put('/users/:userId/level', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { level } = req.body;
+
+    const validLevels = ['beginner', 'intermediate', 'advanced', 'expert'];
+    if (!level || !validLevels.includes(level)) {
+      return res.status(400).json({ message: 'Invalid level.' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (user.role !== 'candidate') return res.status(400).json({ message: 'Level can only be set for candidates' });
+
+    const previousLevel = user.level || 'beginner';
+    user.level = level;
+    await user.save();
+
+    res.json({
+      message: `Level changed from ${previousLevel} to ${level}`,
+      user: { _id: user._id, name: user.name, level: user.level },
+      previousLevel,
+      newLevel: level
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
 
 module.exports = router;

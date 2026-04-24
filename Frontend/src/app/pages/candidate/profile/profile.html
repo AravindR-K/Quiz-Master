@@ -29,6 +29,63 @@
       </div>
     </div>
 
+    <!-- Topics of Interest Section -->
+    <div class="section topics-section card card-padding">
+      <div class="section-header">
+        <h2 class="section-title">Topics of Interest</h2>
+        @if (isSavingTopics()) {
+          <span class="saving-indicator">Saving...</span>
+        }
+      </div>
+      <p class="section-desc">Define your preferred topics to help admins assign relevant quizzes based on your comfort level.</p>
+      
+      <!-- Existing Topics Display -->
+      <div class="existing-topics">
+        @for (topic of topics(); track $index) {
+          <div class="topic-tag">
+            <div class="topic-tag-info">
+              <span class="topic-tag-name">{{ topic.topic }}</span>
+              <span class="topic-tag-level" 
+                [class.high]="topic.comfortLevel >= 75" 
+                [class.medium]="topic.comfortLevel >= 40 && topic.comfortLevel < 75" 
+                [class.low]="topic.comfortLevel < 40">
+                {{ topic.comfortLevel }}%
+              </span>
+            </div>
+            <button class="topic-tag-remove" (click)="removeTopic($index)" title="Remove topic">
+              <span class="material-symbols-rounded">close</span>
+            </button>
+          </div>
+        }
+        @if (topics().length === 0) {
+          <p class="no-topics-msg">You haven't added any topics yet.</p>
+        }
+      </div>
+
+      <!-- Add New Topic Form -->
+      <div class="add-topic-form">
+        <div class="topic-input-group">
+          <label>Topic Name</label>
+          <input type="text" [(ngModel)]="newTopicName" placeholder="e.g., Python, React..." class="input-field" (keyup.enter)="addTopic()" />
+        </div>
+        <div class="topic-slider-group">
+          <div class="slider-header">
+            <label>Comfort Level</label>
+            <span class="comfort-value" 
+              [class.high]="newTopicComfort() >= 75" 
+              [class.medium]="newTopicComfort() >= 40 && newTopicComfort() < 75" 
+              [class.low]="newTopicComfort() < 40">
+              {{ newTopicComfort() }}%
+            </span>
+          </div>
+          <input type="range" [(ngModel)]="newTopicComfort" min="0" max="100" class="slider-field" />
+        </div>
+        <button class="btn btn-primary btn-add" (click)="addTopic()" [disabled]="!newTopicName().trim() || isSavingTopics()">
+          <span class="material-symbols-rounded">add</span> Add
+        </button>
+      </div>
+    </div>
+
     <div class="section">
       <h2 class="section-title">Test Results</h2>
       @if (submissions().length === 0) {

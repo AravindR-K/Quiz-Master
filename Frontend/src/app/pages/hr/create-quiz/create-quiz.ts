@@ -16,7 +16,6 @@ export class HRCreateQuizComponent {
   timer = 30;
   category = '';
   difficulty = 'medium';
-  topic = '';
   selectedFile: File | null = null;
   fileName = signal('');
 
@@ -49,7 +48,6 @@ export class HRCreateQuizComponent {
     formData.append('questionsFile', this.selectedFile);
     if (this.category) formData.append('category', this.category);
     if (this.difficulty) formData.append('difficulty', this.difficulty);
-    if (this.topic) formData.append('topic', this.topic);
 
     this.quizService.createHRQuiz(formData).subscribe({
       next: (res) => {

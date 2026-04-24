@@ -9,23 +9,35 @@
 
 .quiz-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
 
-.quiz-card { padding: 24px; display: flex; flex-direction: column; gap: 12px; }
+.quiz-card { padding: 24px; display: flex; flex-direction: column; gap: 12px; height: 100%; box-sizing: border-box; }
 .quiz-card.taken { opacity: 0.85; }
-.quiz-card-header { display: flex; align-items: center; justify-content: space-between; }
+.quiz-card-header { display: flex; align-items: flex-start; justify-content: flex-start; gap: 12px; }
 
 .quiz-icon-wrap {
-  width: 40px; height: 40px; border-radius: var(--radius-md);
+  width: 40px; height: 40px; border-radius: var(--radius-md); flex-shrink: 0;
   background: var(--accent-primary-light); display: flex; align-items: center; justify-content: center;
 }
 .quiz-icon-wrap .material-symbols-rounded { font-size: 22px; color: var(--accent-primary); }
 .quiz-icon-wrap.completed { background: var(--success-light); }
 .quiz-icon-wrap.completed .material-symbols-rounded { color: var(--success); }
 
-.quiz-meta { display: flex; gap: 6px; }
+.quiz-meta { display: flex; gap: 8px; flex: 1; flex-wrap: wrap; justify-content: flex-start; align-items: center; min-width: 0; margin-left: 4px; width: 100%; }
+
+.difficulty-badge { margin-left: auto; }
+
+.quiz-meta .badge {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 15vw; /* Keeps it contained so it truncation kicks in */
+}
+@media (max-width: 768px) {
+  .quiz-meta .badge { max-width: 40vw; }
+}
 
 .quiz-title { font-size: 16px; font-weight: 600; color: var(--text-primary); margin: 0; }
 
-.quiz-details { display: flex; gap: 16px; }
+.quiz-details { display: flex; gap: 16px; margin-bottom: 8px; }
 .quiz-detail { display: flex; align-items: center; gap: 4px; font-size: 13px; color: var(--text-muted); }
 .quiz-detail .material-symbols-rounded { font-size: 16px; }
 
@@ -37,7 +49,7 @@
 .fill-poor { background: var(--danger); }
 .result-score { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
 
-.quiz-card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
+.quiz-card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: auto; }
 
 @media (max-width: 768px) {
   .page { padding: 20px; }
