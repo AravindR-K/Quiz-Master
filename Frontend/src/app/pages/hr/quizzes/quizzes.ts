@@ -11,7 +11,7 @@ import { QuizService } from '../../../services/quiz.service';
   styleUrl: './quizzes.css'
 })
 export class HRQuizzesComponent implements OnInit {
-  quizzes = signal<any[]>([]);
+quizzes = signal<any[]>([]);
   loading = signal(true);
   error = signal('');
 
@@ -22,6 +22,7 @@ export class HRQuizzesComponent implements OnInit {
   }
 
   loadQuizzes(): void {
+    this.loading.set(true);
     this.quizService.getHRQuizzes().subscribe({
       next: (res) => { this.quizzes.set(res.quizzes); this.loading.set(false); },
       error: () => this.loading.set(false)
@@ -34,5 +35,14 @@ export class HRQuizzesComponent implements OnInit {
       next: () => this.loadQuizzes(),
       error: (err) => this.error.set(err.error?.message || 'Cannot delete quiz')
     });
+  }
+
+  getDifficultyClass(d: string): string {
+    switch (d?.toLowerCase()) {
+      case 'easy': return 'badge-success';
+      case 'medium': return 'badge-warning';
+      case 'hard': return 'badge-danger';
+      default: return 'badge-primary';
+    }
   }
 }

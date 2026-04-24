@@ -1,0 +1,126 @@
+import { Component, OnInit, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { QuizService } from '../../../services/quiz.service';
+
+@Component({
+  selector: 'app-edit-quiz',
+  imports: [CommonModule, FormsModule, RouterLink],
+  templateUrl: './edit-quiz.html',
+  styleUrl: './edit-quiz.css',
+})
+export class HREditQuizComponent {
+  quizId = '';
+  title = '';
+  timer = 30;
+  category = '';
+  difficulty = 'medium';
+  questions = signal<any[]>([]);
+
+  loading = signal(true);
+  saving = signal(false);
+  success = signal('');
+  error = signal('');
+  locked = signal(false);
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private quizService: QuizService
+  ) {}
+
+  ngOnInit(): void {
+    this.quizId = this.route.snapshot.params['quizId'];
+    this.loadQuiz();
+  }
+
+  loadQuiz(): void {
+    this.quizService.getHRQuiz(this.quizId).subscribe({
+      next: (res) => {
+        const q = res.quiz;
+        this.title = q.title;
+        this.timer = q.timer;
+        this.category = q.category || '';
+        this.difficulty = q.difficulty || 'medium';
+        this.questions.set(q.questions || []);
+        this.locked.set(res.hasAttempts || false);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.error.set(err.error?.message || 'Failed to load quiz');
+        this.loading.set(false);
+      }
+    });
+  }
+onSave(): void {
+  if (!this.title.trim()) {
+    this.error.set('Title is required');
+    return;
+  }
+
+  this.saving.set(true);
+  this.error.set('');
+
+  // 🔥 Format questions correctly
+  const formattedQuestions = this.questions().map(q => {
+    const options = q.options;
+
+    const correctIndex = options.findIndex(
+      (opt: string) => opt == q.correctAnswer
+    );
+
+    return {
+      question: q.question,
+      options,
+      correctAnswers: [correctIndex.toString()],
+      type: 'single'
+    };
+  }); // ✅ closes map()
+
+  // 🔥 Final data
+  const data = {
+    title: this.title,
+    timer: this.timer,
+    category: this.category,
+    difficulty: this.difficulty,
+    questions: formattedQuestions
+  }; // ✅ closes data object
+
+  this.quizService.updateHRQuiz(this.quizId, data).subscribe({
+    next: () => {
+      this.saving.set(false);
+      this.success.set('Quiz updated successfully!');
+      setTimeout(() => this.router.navigate(['/hr/quizzes']), 1200);
+    },
+    error: (err) => {
+      this.saving.set(false);
+      this.error.set(err.error?.message || 'Failed to update quiz');
+    }
+  }); // ✅ closes subscribe
+} // ✅ closes function
+  updateQuestion(index: number, field: string, value: any): void {
+    const q = [...this.questions()];
+    q[index] = { ...q[index], [field]: value };
+    this.questions.set(q);
+  }
+
+  updateOption(qIndex: number, optIndex: number, value: string): void {
+    const q = [...this.questions()];
+    const opts = [...(q[qIndex].options || [])];
+    opts[optIndex] = value;
+    q[qIndex] = { ...q[qIndex], options: opts };
+    this.questions.set(q);
+  }
+
+  removeQuestion(index: number): void {
+    const q = this.questions().filter((_, i) => i !== index);
+    this.questions.set(q);
+  }
+
+  addQuestion(): void {
+    this.questions.set([...this.questions(), {
+      question: '', options: ['', '', '', ''], correctAnswer: '', marks: 1
+    }]);
+  }
+}

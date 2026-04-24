@@ -1,0 +1,137 @@
+<div class="page-container animate-fade-in split-view" cdkDropListGroup>
+
+  <div class="main-workspace">
+    <div class="page-header">
+      <a routerLink="/hr/quizzes" class="back-link">
+        <span class="material-symbols-rounded">arrow_back</span> Back to Quizzes
+      </a>
+      <h1>Assign Quiz</h1>
+      <p class="page-subtitle">Drag candidates to assign them to <strong>{{ quizTitle() }}</strong></p>
+    </div>
+
+    <!-- Quiz Info Badge -->
+    <div class="quiz-info-bar card card-padding" style="margin-bottom: 30px;">
+      <div class="quiz-info-row">
+        <div class="quiz-info-item">
+          <span class="material-symbols-rounded">quiz</span>
+          <div>
+            <small>Quiz</small>
+            <strong>{{ quizTitle() }}</strong>
+          </div>
+        </div>
+        <div class="quiz-info-item">
+          <span class="material-symbols-rounded">speed</span>
+          <div>
+            <small>Difficulty</small>
+            <strong>{{ quizDifficulty() | titlecase }}</strong>
+          </div>
+        </div>
+        <div class="quiz-info-item">
+          <span class="material-symbols-rounded">category</span>
+          <div>
+            <small>Category</small>
+            <strong>{{ quizCategory() || 'General' }}</strong>
+          </div>
+        </div>
+        <div class="quiz-info-item">
+          <span class="material-symbols-rounded">filter_list</span>
+          <div>
+            <small>Filter Criteria</small>
+            <strong>{{ getFilterDescription() }}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    @if (loading()) {
+      <div class="loading-center">
+        <div class="spinner spinner-lg"></div>
+        <p>Loading candidates...</p>
+      </div>
+    } @else {
+      <!-- Available Candidates Pool -->
+      <h2 class="section-title">
+        <span class="material-symbols-rounded">person_search</span>
+        Eligible Candidates
+        <span class="count-badge">{{ availableCandidates.length }}</span>
+      </h2>
+
+      <div class="available-pool" cdkDropList [cdkDropListData]="availableCandidates" (cdkDropListDropped)="drop($event)">
+        @if (availableCandidates.length === 0) {
+          <div class="empty-pool">
+            <span class="material-symbols-rounded">done_all</span>
+            <p>All matching candidates have been assigned!</p>
+          </div>
+        }
+        @for (candidate of availableCandidates; track candidate._id) {
+          <div class="candidate-card" cdkDrag [cdkDragData]="candidate">
+            <div class="candidate-avatar">{{ candidate.name.charAt(0).toUpperCase() }}</div>
+            <div class="candidate-details">
+              <h4>{{ candidate.name }}</h4>
+              <p>{{ candidate.email }}</p>
+            </div>
+            <div class="candidate-meta">
+              @if (candidate.matchedProficiency) {
+                <span class="level-pill" [attr.data-level]="candidate.matchedProficiency">{{ candidate.matchedProficiency | titlecase }}</span>
+                <span class="comfort-tag">{{ candidate.matchedComfort }}%</span>
+              } @else {
+                <span class="level-pill" [attr.data-level]="candidate.level">{{ candidate.level | titlecase }}</span>
+              }
+            </div>
+            <span class="material-symbols-rounded drag-icon">drag_indicator</span>
+            <div class="custom-drag-placeholder" *cdkDragPlaceholder></div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Sidebar: Assigned Candidates -->
+  <aside class="assigned-sidebar card">
+    <div class="sidebar-header">
+      <div class="sidebar-title">
+        <span class="material-symbols-rounded">how_to_reg</span>
+        <h2>Assigned</h2>
+      </div>
+      <div class="sidebar-badge">{{ assignedCandidates.length }}</div>
+    </div>
+
+    <div class="assigned-list" cdkDropList [cdkDropListData]="assignedCandidates" (cdkDropListDropped)="drop($event)">
+      @if (assignedCandidates.length === 0) {
+        <div class="empty-assigned">
+          <span class="material-symbols-rounded">move_down</span>
+          <p>Drag candidates here to assign</p>
+        </div>
+      }
+      @for (candidate of assignedCandidates; track candidate._id) {
+        <div class="assigned-card" cdkDrag [cdkDragData]="candidate">
+          <div class="assigned-avatar">{{ candidate.name.charAt(0).toUpperCase() }}</div>
+          <div class="assigned-details">
+            <h4>{{ candidate.name }}</h4>
+            <p>{{ candidate.email }}</p>
+          </div>
+          <span class="material-symbols-rounded drag-icon">drag_indicator</span>
+          <div class="custom-drag-placeholder" *cdkDragPlaceholder></div>
+        </div>
+      }
+    </div>
+
+    <!-- Save Button -->
+    <div class="sidebar-footer">
+      @if (successMessage()) {
+        <span class="save-toast">
+          <span class="material-symbols-rounded">check_circle</span>
+          {{ successMessage() }}
+        </span>
+      }
+      <button class="btn btn-primary save-btn" (click)="saveAssignments()" [disabled]="isSaving()">
+        @if (isSaving()) {
+          <span class="spinner"></span> Saving...
+        } @else {
+          <span class="material-symbols-rounded">save</span> Save Assignments
+        }
+      </button>
+    </div>
+  </aside>
+
+</div>

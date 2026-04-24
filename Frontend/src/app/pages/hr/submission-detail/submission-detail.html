@@ -1,50 +1,60 @@
 <div class="page-container animate-fade-in">
-  <a routerLink="/hr/candidates" class="back-link">
-    <span class="material-symbols-rounded">arrow_back</span> Back to Candidates
-  </a>
+    @if (loading()) {
+      <div class="loading-state"><div class="loader"></div><p>Loading details...</p></div>
+    } @else if (submission()) {
+      <div class="breadcrumb">
+        <a routerLink="/admin/users">Users</a> <span>→</span>
+        <a [routerLink]="['/admin/users', submission().student?.id || submission().student?._id, 'history']">{{ submission().student?.name }}</a>
+        <span>→</span> <span class="current">{{ submission().quiz?.title }}</span>
+      </div>
 
-  @if (loading()) {
-    <div class="loading-center"><div class="spinner spinner-lg"></div><p>Loading submission...</p></div>
-  } @else if (submission()) {
-    <div class="submission-header card card-padding">
-      <div class="header-row">
-        <div>
-          <h1>{{ submission().quizId?.title || 'Quiz' }}</h1>
-          <p class="sub-info">{{ submission().studentId?.name }} • {{ submission().studentId?.email }}</p>
-        </div>
-        <div class="score-display">
+      <!-- Score Summary -->
+      <div class="score-summary">
+        <div class="score-card">
+          <span class="score-label">Score</span>
           <span class="score-value">{{ submission().score }}/{{ submission().totalMarks }}</span>
-          <span class="score-percent" [class.good]="submission().percentage >= 70"
-                [class.avg]="submission().percentage >= 40 && submission().percentage < 70"
-                [class.poor]="submission().percentage < 40">{{ submission().percentage }}%</span>
+        </div>
+        <div class="score-card">
+          <span class="score-label">Percentage</span>
+          <span class="score-value" [class.good]="submission().percentage >= 70" [class.avg]="submission().percentage >= 40 && submission().percentage < 70" [class.poor]="submission().percentage < 40">{{ submission().percentage }}%</span>
+        </div>
+        <div class="score-card">
+          <span class="score-label">Time Taken</span>
+          <span class="score-value">{{ formatTime(submission().timeTaken) }}</span>
+        </div>
+        <div class="score-card">
+          <span class="score-label">Submitted</span>
+          <span class="score-value small">{{ submission().submittedAt | date:'medium' }}</span>
         </div>
       </div>
-      <div class="meta-row">
-        <span><span class="material-symbols-rounded">timer</span> {{ formatTime(submission().timeTaken) }}</span>
-        <span><span class="material-symbols-rounded">calendar_today</span> {{ submission().submittedAt | date:'medium' }}</span>
-      </div>
-    </div>
 
-    <h2 class="section-title">Answers</h2>
-
-    @for (ans of detailedAnswers(); track $index; let i = $index) {
-      <div class="card card-padding answer-card" [class.correct]="ans.isCorrect" [class.wrong]="!ans.isCorrect">
-        <div class="answer-header">
-          <span class="q-num">Q{{ i + 1 }}</span>
-          <span class="material-symbols-rounded result-icon">{{ ans.isCorrect ? 'check_circle' : 'cancel' }}</span>
-        </div>
-        <p class="question-text">{{ ans.question }}</p>
-        <div class="answer-details">
-          <div class="answer-row">
-            <span class="answer-label">Student's Answer:</span>
-            <span class="answer-value" [class.wrong-text]="!ans.isCorrect">{{ ans.studentAnswer || '—' }}</span>
+      <!-- Questions -->
+      <h2 class="section-title">Detailed Answers</h2>
+      <div class="questions-list">
+        @for (q of detailedAnswers(); track q.questionId; let i = $index) {
+          <div class="question-card" [class.correct]="q.isCorrect" [class.wrong]="!q.isCorrect">
+            <div class="q-header">
+              <span class="q-number">Q{{ i + 1 }}</span>
+              <span class="q-type-badge">{{ q.type === 'mcq' ? 'MCQ' : 'Single' }}</span>
+              <span class="q-status" [class.correct]="q.isCorrect">{{ q.isCorrect ? '✓ Correct' : '✗ Wrong' }}</span>
+            </div>
+            <p class="q-text">{{ q.question }}</p>
+            <div class="options-grid">
+              @for (opt of q.options; track opt) {
+                <div class="option"
+                     [class.correct-answer]="q.correctAnswers.includes(opt)"
+                     [class.student-answer]="q.studentAnswers.includes(opt)"
+                     [class.wrong-answer]="q.studentAnswers.includes(opt) && !q.correctAnswers.includes(opt)">
+                  <span class="option-marker">
+                    @if (q.correctAnswers.includes(opt)) { ✓ }
+                    @else if (q.studentAnswers.includes(opt)) { ✗ }
+                  </span>
+                  {{ opt }}
+                </div>
+              }
+            </div>
           </div>
-          <div class="answer-row">
-            <span class="answer-label">Correct Answer:</span>
-            <span class="answer-value correct-text">{{ ans.correctAnswer }}</span>
-          </div>
-        </div>
+        }
       </div>
     }
-  }
 </div>

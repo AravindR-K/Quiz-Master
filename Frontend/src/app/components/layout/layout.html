@@ -37,9 +37,9 @@
       <!-- Navigation -->
       <nav class="sidebar-nav">
         @for (item of navItems(); track item.route) {
-          @if (item.route === '/admin/users' || item.route === '/hr/candidates') {
+          @if (item.route === '/admin/users' || item.route === '/hr/users') {
             <a class="nav-item" (click)="handleNavClick(item, $event)" href="javascript:void(0)"
-               [class.active]="router.url.includes('/admin/users') || router.url.includes('/hr/candidates') || router.url.includes('manage-groups')">
+               [class.active]="router.url.includes('/admin/users') || router.url.includes('/hr/users') || router.url.includes('manage-groups')">
               <span class="material-symbols-rounded nav-icon">{{ item.icon }}</span>
               <span class="nav-label">{{ item.label }}</span>
             </a>
@@ -128,7 +128,7 @@
           </div>
           <span class="material-symbols-rounded arrow-icon">arrow_forward</span>
         </a>
-        
+                                                                                                                                          
         @if (authService.getUserRole() === 'admin') {
           <a routerLink="/admin/hr-users" class="glassy-option" (click)="closeManageUsersPopup()">
             <div class="option-icon-wrapper">

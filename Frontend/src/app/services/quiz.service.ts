@@ -19,37 +19,40 @@
     }
 
     getUsers(role?: string): Observable<any> {
-      const url = role ? `${this.adminUrl}/users?role=${role}` : `${this.adminUrl}/users`;
+      const url = role ? `${this.getBaseUrl()}/users?role=${role}` : `${this.getBaseUrl()}/users`;
       return this.http.get(url);
     }
 
     getLoggedInUsers(): Observable<any> {
-      return this.http.get(`${this.adminUrl}/users/logged-in`);
+      return this.http.get(`${this.getBaseUrl()}/users/logged-in`);
     }
 
     createHRUser(data: { name: string; email: string; password: string }): Observable<any> {
-      return this.http.post(`${this.adminUrl}/users/create-hr`, data);
+      return this.http.post(`${this.adminUrl}/users/create-hr`, data); // Only admin can create HR
     }
 
     deleteUser(userId: string): Observable<any> {
-      return this.http.delete(`${this.adminUrl}/users/${userId}`);
+      return this.http.delete(`${this.getBaseUrl()}/users/${userId}`);
     }
 
     editUser(userId: string, data: { name?: string; email?: string; password?: string }): Observable<any> {
-      return this.http.put(`${this.adminUrl}/users/${userId}`, data);
+      return this.http.put(`${this.getBaseUrl()}/users/${userId}`, data);
     }
 
     getUserHistory(userId: string): Observable<any> {
-      return this.http.get(`${this.adminUrl}/users/${userId}/history`);
+      // In HR route it is /candidates/:userId/history but let's check backend hr.js
+      // Wait, hr.js has /candidates/:userId/history and /candidates instead of /users for HR?
+      // No, hr.js has /users, /users/logged-in, /users/:userId, etc.
+      // Wait, let's verify.
+      return this.http.get(`${this.getBaseUrl()}/users/${userId}/history`);
     }
 
     updateUserLevel(userId: string, level: string, role: string = 'admin'): Observable<any> {
-      const baseUrl = role === 'hr' ? this.hrUrl : this.adminUrl;
-      return this.http.put(`${baseUrl}/users/${userId}/level`, { level });
+      return this.http.put(`${this.getBaseUrl()}/users/${userId}/level`, { level });
     }
 
     getSubmissionDetails(submissionId: string): Observable<any> {
-      return this.http.get(`${this.adminUrl}/submissions/${submissionId}`);
+      return this.http.get(`${this.getBaseUrl()}/submissions/${submissionId}`);
     }
 
     createQuiz(formData: FormData): Observable<any> {
@@ -144,6 +147,18 @@
 
     getHRGroups(): Observable<any> {
       return this.http.get(`${this.hrUrl}/groups`);
+    }
+
+    assignHRQuiz(quizId: string, data: any): Observable<any> {
+      return this.http.put(`${this.hrUrl}/quiz/${quizId}/assign`, data);
+    }
+
+    getHRAssignCandidates(quizId: string): Observable<any> {
+      return this.http.get(`${this.hrUrl}/quiz/${quizId}/assign-candidates`);
+    }
+
+    generateHRAIQuiz(data: any): Observable<any> {
+      return this.http.post(`${this.hrUrl}/quiz/generate-ai`, data);
     }
 
     // ========== CANDIDATE ENDPOINTS ==========

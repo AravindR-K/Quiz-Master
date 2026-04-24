@@ -83,25 +83,33 @@ export const routes: Routes = [
         path: 'quizzes',
         loadComponent: () => import('./pages/hr/quizzes/quizzes').then(m => m.HRQuizzesComponent)
       },
+        {
+        path: 'users/:userId/history',
+        loadComponent: () => import('./pages/hr/user-history/user-history').then(m => m.HRUserHistoryComponent)
+      },
       {
         path: 'create-quiz',
         loadComponent: () => import('./pages/hr/create-quiz/create-quiz').then(m => m.HRCreateQuizComponent)
       },
       {
-        path: 'candidates',
-        loadComponent: () => import('./pages/hr/candidates/candidates').then(m => m.HRCandidatesComponent)
+        path: 'users',
+        loadComponent: () => import('./pages/hr/users/users').then(m => m.Users)
       },
       {
         path: 'manage-groups',
-        loadComponent: () => import('./pages/admin/manage-groups/manage-groups').then(m => m.ManageGroupsComponent)
-      },
-      {
-        path: 'candidates/:userId/history',
-        loadComponent: () => import('./pages/hr/candidate-history/candidate-history').then(m => m.HRCandidateHistoryComponent)
+        loadComponent: () => import('./pages/hr/manage-groups/manage-groups').then(m => m.HRManageGroupsComponent)
       },
       {
         path: 'submissions/:submissionId',
         loadComponent: () => import('./pages/hr/submission-detail/submission-detail').then(m => m.HRSubmissionDetailComponent)
+      },
+      {
+        path: 'quiz/:quizId/assign',
+        loadComponent: () => import('./pages/hr/assign-quiz/assign-quiz').then(m => m.HRAssignQuizComponent)
+      },
+      {
+        path: 'quiz/:quizId/edit',
+        loadComponent: () => import('./pages/hr/edit-quiz/edit-quiz').then(m => m.HREditQuizComponent)
       },
     ]
   },

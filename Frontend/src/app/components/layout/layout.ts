@@ -48,7 +48,7 @@ export class LayoutComponent {
           { icon: 'dashboard', label: 'Dashboard', route: '/hr/dashboard' },
           { icon: 'quiz', label: 'My Quizzes', route: '/hr/quizzes' },
           { icon: 'add_circle', label: 'Create Quiz', route: '/hr/create-quiz' },
-          { icon: 'people', label: 'Candidates', route: '/hr/candidates' },
+          { icon: 'people', label: 'Candidates', route: '/hr/users' },
         ];
       case 'candidate':
         return [
@@ -92,7 +92,7 @@ export class LayoutComponent {
   }
 
   handleNavClick(item: NavItem, event: Event): void {
-    if (item.route === '/admin/users' || item.route === '/hr/candidates') {
+    if (item.route === '/admin/users' || item.route === '/hr/users') {
       event.preventDefault();
       this.uiService.showManageUsersPopup.set(true);
     } else {
@@ -105,7 +105,7 @@ export class LayoutComponent {
   }
 
   getUsersRoute(): string {
-    return this.authService.getUserRole() === 'hr' ? '/hr/candidates' : '/admin/users';
+    return this.authService.getUserRole() === 'hr' ? '/hr/users' : '/admin/users';
   }
   
   getManageGroupsRoute(): string {
