@@ -23,7 +23,7 @@
     } @else {
       <div class="users-grid">
         @for (user of users(); track user._id) {
-          <a [routerLink]="['/admin/user-history/', user._id, 'history']" class="user-card">
+          <a [routerLink]="['/admin/users', user._id, 'history']" class="user-card">
             <div class="user-card-avatar">{{ user.name?.charAt(0) || '?' }}</div>
             <div class="user-card-info">
               <div class="name-row">
