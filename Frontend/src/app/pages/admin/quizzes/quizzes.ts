@@ -1,12 +1,13 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { QuizService } from '../../../services/quiz.service';
 
 @Component({
   selector: 'app-admin-quizzes',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, FormsModule],
   templateUrl: './quizzes.html',
   styleUrl: './quizzes.css'
 })
@@ -14,8 +15,18 @@ export class AdminQuizzesComponent implements OnInit {
   quizzes = signal<any[]>([]);
   loading = signal(true);
   error = signal('');
+  
+  showEditPopup = signal(false);
+  editQuizForm = {
+    _id: '',
+    title: '',
+    timer: 10,
+    difficulty: 'medium',
+    category: ''
+  };
+  savingPopup = signal(false);
 
-  constructor(private quizService: QuizService) {}
+  constructor(private quizService: QuizService, private router: Router) {}
 
   ngOnInit(): void {
     this.loadQuizzes();
@@ -44,5 +55,47 @@ export class AdminQuizzesComponent implements OnInit {
       case 'hard': return 'badge-danger';
       default: return 'badge-primary';
     }
+  }
+
+  openEditPopup(quiz: any): void {
+    this.editQuizForm = {
+      _id: quiz._id,
+      title: quiz.title,
+      timer: quiz.timer,
+      difficulty: quiz.difficulty,
+      category: quiz.category
+    };
+    this.showEditPopup.set(true);
+  }
+
+  closeEditPopup(): void {
+    this.showEditPopup.set(false);
+  }
+
+  saveBasicChanges(): void {
+    this.savingPopup.set(true);
+    // Don't send questions, only update basic details
+    this.quizService.updateQuiz(this.editQuizForm._id, this.editQuizForm).subscribe({
+      next: () => {
+        this.savingPopup.set(false);
+        this.closeEditPopup();
+        this.loadQuizzes();
+      },
+      error: (err) => {
+        this.savingPopup.set(false);
+        this.error.set(err.error?.message || 'Failed to save changes');
+        setTimeout(() => this.error.set(''), 3000);
+      }
+    });
+  }
+
+  editQuestions(): void {
+    // Navigate to edit-quiz page with the pending changes in history.state
+    this.router.navigate(['/admin/quiz', this.editQuizForm._id, 'edit'], {
+      state: {
+        quizOverrides: { ...this.editQuizForm }
+      }
+    });
+    this.closeEditPopup();
   }
 }

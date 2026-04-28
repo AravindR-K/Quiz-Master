@@ -37,15 +37,35 @@ export class EditQuizComponent implements OnInit {
   }
 
   loadQuiz(): void {
+    const overrides = history.state?.quizOverrides;
+
     this.quizService.getAdminQuiz(this.quizId).subscribe({
       next: (res) => {
         const q = res.quiz;
-        this.title = q.title;
-        this.timer = q.timer;
-        this.category = q.category || '';
-        this.difficulty = q.difficulty || 'medium';
-        this.questions.set(q.questions || []);
-        this.locked.set(res.hasAttempts || false);
+        this.title = overrides ? overrides.title : q.title;
+        this.timer = overrides ? overrides.timer : q.timer;
+        this.category = overrides ? overrides.category : (q.category || '');
+        this.difficulty = overrides ? overrides.difficulty : (q.difficulty || 'medium');
+
+        // Questions come from res.questions (separate from quiz object)
+        const rawQuestions = res.questions || [];
+        const mapped = rawQuestions.map((rq: any) => {
+          // correctAnswers stores indices as strings like ["0"]
+          // Map them back to the actual option text for editing
+          const correctIndex = rq.correctAnswers?.[0] ? parseInt(rq.correctAnswers[0]) : -1;
+          const correctAnswer = (correctIndex >= 0 && rq.options[correctIndex]) ? rq.options[correctIndex] : '';
+
+          return {
+            _id: rq._id,
+            question: rq.question,
+            options: [...rq.options],
+            correctAnswer: correctAnswer,
+            type: rq.type || 'single'
+          };
+        });
+
+        this.questions.set(mapped);
+        this.locked.set((res.attemptCount || 0) > 0);
         this.loading.set(false);
       },
       error: (err) => {
@@ -54,52 +74,50 @@ export class EditQuizComponent implements OnInit {
       }
     });
   }
-onSave(): void {
-  if (!this.title.trim()) {
-    this.error.set('Title is required');
-    return;
+
+  onSave(): void {
+    if (!this.title.trim()) {
+      this.error.set('Title is required');
+      return;
+    }
+
+    this.saving.set(true);
+    this.error.set('');
+
+    const formattedQuestions = this.questions().map(q => {
+      const correctIndex = q.options.findIndex(
+        (opt: string) => opt === q.correctAnswer
+      );
+
+      return {
+        question: q.question,
+        options: q.options,
+        correctAnswers: [correctIndex.toString()],
+        type: 'single'
+      };
+    });
+
+    const data = {
+      title: this.title,
+      timer: this.timer,
+      category: this.category,
+      difficulty: this.difficulty,
+      questions: formattedQuestions
+    };
+
+    this.quizService.updateQuiz(this.quizId, data).subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.success.set('Quiz updated successfully!');
+        setTimeout(() => this.router.navigate(['/admin/quizzes']), 1200);
+      },
+      error: (err) => {
+        this.saving.set(false);
+        this.error.set(err.error?.message || 'Failed to update quiz');
+      }
+    });
   }
 
-  this.saving.set(true);
-  this.error.set('');
-
-  // 🔥 Format questions correctly
-  const formattedQuestions = this.questions().map(q => {
-    const options = q.options;
-
-    const correctIndex = options.findIndex(
-      (opt: string) => opt == q.correctAnswer
-    );
-
-    return {
-      question: q.question,
-      options,
-      correctAnswers: [correctIndex.toString()],
-      type: 'single'
-    };
-  }); // ✅ closes map()
-
-  // 🔥 Final data
-  const data = {
-    title: this.title,
-    timer: this.timer,
-    category: this.category,
-    difficulty: this.difficulty,
-    questions: formattedQuestions
-  }; // ✅ closes data object
-
-  this.quizService.updateQuiz(this.quizId, data).subscribe({
-    next: () => {
-      this.saving.set(false);
-      this.success.set('Quiz updated successfully!');
-      setTimeout(() => this.router.navigate(['/admin/quizzes']), 1200);
-    },
-    error: (err) => {
-      this.saving.set(false);
-      this.error.set(err.error?.message || 'Failed to update quiz');
-    }
-  }); // ✅ closes subscribe
-} // ✅ closes function
   updateQuestion(index: number, field: string, value: any): void {
     const q = [...this.questions()];
     q[index] = { ...q[index], [field]: value };
@@ -108,9 +126,22 @@ onSave(): void {
 
   updateOption(qIndex: number, optIndex: number, value: string): void {
     const q = [...this.questions()];
+    const oldOption = q[qIndex].options[optIndex];
     const opts = [...(q[qIndex].options || [])];
     opts[optIndex] = value;
-    q[qIndex] = { ...q[qIndex], options: opts };
+
+    // If the old option was the correct answer, update correctAnswer to the new value
+    const updated = { ...q[qIndex], options: opts };
+    if (q[qIndex].correctAnswer === oldOption) {
+      updated.correctAnswer = value;
+    }
+    q[qIndex] = updated;
+    this.questions.set(q);
+  }
+
+  setCorrectAnswer(qIndex: number, optionText: string): void {
+    const q = [...this.questions()];
+    q[qIndex] = { ...q[qIndex], correctAnswer: optionText };
     this.questions.set(q);
   }
 
@@ -121,7 +152,11 @@ onSave(): void {
 
   addQuestion(): void {
     this.questions.set([...this.questions(), {
-      question: '', options: ['', '', '', ''], correctAnswer: '', marks: 1
+      question: '', options: ['', '', '', ''], correctAnswer: '', type: 'single'
     }]);
+    setTimeout(() => {
+      const cards = document.querySelectorAll('.question-card');
+      cards[cards.length - 1]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 50);
   }
 }

@@ -686,7 +686,7 @@ IMPORTANT: The "correct" value must be the EXACT TEXT of the option, not the opt
           type: q.correctAnswers.length > 1 ? 'mcq' : 'single'
         }));
 
-        await Question.insertMany(questions);
+        await Question.insertMany(questionDocs);
         updateData.totalQuestions = questions.length;
       }
 

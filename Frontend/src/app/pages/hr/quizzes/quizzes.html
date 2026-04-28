@@ -52,7 +52,7 @@
             </div>
           </div>
           <div class="quiz-card-actions">
-            <a [routerLink]="['/admin/quiz', quiz._id, 'assign']" class="btn btn-primary btn-sm">
+            <a [routerLink]="['/hr/quiz', quiz._id, 'assign']" class="btn btn-primary btn-sm">
               <span class="material-symbols-rounded">person_add</span> Assign
             </a>
             @if (quiz.attemptCount > 0) {
@@ -61,9 +61,9 @@
                 {{ quiz.attemptCount }} attempt{{ quiz.attemptCount > 1 ? 's' : '' }}
               </span>
             } @else {
-              <a [routerLink]="['/admin/quiz', quiz._id, 'edit']" class="btn btn-outline btn-sm">
+              <button class="btn btn-outline btn-sm" (click)="openEditPopup(quiz)">
                 <span class="material-symbols-rounded">edit</span> Edit
-              </a>
+              </button>
               <button class="btn btn-danger btn-sm" (click)="deleteQuiz(quiz._id)">
                 <span class="material-symbols-rounded">delete</span> Delete
               </button>
@@ -74,3 +74,57 @@
     </div>
   }
 </div>
+
+<!-- Edit Quiz Modal -->
+@if (showEditPopup()) {
+  <div class="modal-overlay" (click)="closeEditPopup()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Edit Quiz Details</h2>
+        <button class="icon-btn" (click)="closeEditPopup()">
+          <span class="material-symbols-rounded">close</span>
+        </button>
+      </div>
+      
+      <div class="modal-body quiz-form">
+        <div class="form-group">
+          <label class="form-label">Quiz Title</label>
+          <input class="form-input" [(ngModel)]="editQuizForm.title" placeholder="Quiz title">
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Timer (min)</label>
+            <input class="form-input" type="number" [(ngModel)]="editQuizForm.timer" min="1">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Difficulty</label>
+            <select class="form-select" [(ngModel)]="editQuizForm.difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <input class="form-input" [(ngModel)]="editQuizForm.category" placeholder="e.g. Java, Angular">
+        </div>
+      </div>
+      
+      <div class="modal-footer" style="display: flex; gap: 12px; margin-top: 24px; justify-content: flex-end;">
+        <button class="btn btn-outline" (click)="editQuestions()">
+          <span class="material-symbols-rounded">edit_square</span> Edit Questions
+        </button>
+        <button class="btn btn-primary" (click)="saveBasicChanges()" [disabled]="savingPopup()">
+          @if (savingPopup()) {
+            <div class="spinner"></div> Saving...
+          } @else {
+            <span class="material-symbols-rounded">save</span> Save Changes
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

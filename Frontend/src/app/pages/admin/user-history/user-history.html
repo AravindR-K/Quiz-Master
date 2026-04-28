@@ -49,7 +49,9 @@
           <table class="history-table">
             <thead>
               <tr>
-                <th>Quiz</th>
+                <th>Quiz Name</th>
+                <th>Topic</th>
+                <th>Candidate's comfort Level</th>
                 <th>Score</th>
                 <th>Percentage</th>
                 <th>Time Taken</th>
@@ -61,6 +63,8 @@
               @for (sub of submissions(); track sub._id) {
                 <tr>
                   <td class="quiz-name">{{ sub.quizId?.title || 'Deleted Quiz' }}</td>
+                  <td>{{ sub.quizId?.category || 'N/A'   }}</td>
+                  <td>{{ getComfortLevel(sub.quizId?.category) }}</td>
                   <td><span class="score-badge">{{ sub.score }}/{{ sub.totalMarks }}</span></td>
                   <td>
                     <div class="percent-bar">
@@ -83,6 +87,11 @@
         </div>
       }
     }
+    <div class="evaulation-summary">
+      <button>
+        Evaluate Summary
+      </button>
+    </div>
   </div>
 </div>
 

@@ -325,4 +325,22 @@
 
 .toast .material-symbols-rounded {
   font-size: 20px;
-}
+}
+
+.evaluation-summary {
+  margin-top: 20px;
+}
+
+.evaluation-summary button {
+  background-color: #ef4444;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.evaluation-summary button:hover {
+  background-color: #dc2626;
+  color: white;
+  }

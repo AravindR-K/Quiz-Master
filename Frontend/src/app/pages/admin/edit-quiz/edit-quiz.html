@@ -19,32 +19,6 @@
   @if (loading()) {
     <div class="loading-center"><div class="spinner spinner-lg"></div><p>Loading quiz...</p></div>
   } @else {
-    <div class="card card-padding form-card">
-      <div class="quiz-form">
-        <div class="form-group">
-          <label class="form-label">Quiz Title</label>
-          <input class="form-input" [(ngModel)]="title" placeholder="Quiz title">
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Timer (min)</label>
-            <input class="form-input" type="number" [(ngModel)]="timer" min="1">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Difficulty</label>
-            <select class="form-select" [(ngModel)]="difficulty">
-              <option value="easy">Easy</option>
-              <option value="medium">Medium</option>
-              <option value="hard">Hard</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Category</label>
-          <input class="form-input" [(ngModel)]="category" placeholder="e.g. Java, Angular, Data Structures">
-        </div>
-      </div>
-    </div>
 
     @if (!locked()) {
       <div class="questions-header">
@@ -54,37 +28,66 @@
         </button>
       </div>
 
-      @for (q of questions(); track $index; let i = $index) {
-        <div class="card card-padding question-card">
-          <div class="question-header">
-            <span class="q-number">Q{{ i + 1 }}</span>
-            <button class="btn btn-ghost btn-sm" (click)="removeQuestion(i)">
-              <span class="material-symbols-rounded">delete</span>
-            </button>
-          </div>
-          <div class="form-group">
-            <input class="form-input" [ngModel]="q.question" (ngModelChange)="updateQuestion(i, 'question', $event)" placeholder="Question text">
-          </div>
-          <div class="options-grid">
-            @for (opt of q.options; track $index; let j = $index) {
-              <div class="option-input-wrap">
-                <span class="option-letter">{{ ['A','B','C','D'][j] }}</span>
-                <input class="form-input" [ngModel]="opt" (ngModelChange)="updateOption(i, j, $event)" placeholder="Option {{ j+1 }}">
-              </div>
-            }
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Correct Answer</label>
-              <input class="form-input" [ngModel]="q.correctAnswer" (ngModelChange)="updateQuestion(i, 'correctAnswer', $event)" placeholder="Correct answer text">
+      <div class="questions-list">
+        @for (q of questions(); track $index; let i = $index) {
+          <div class="question-card">
+            <!-- Question Header -->
+            <div class="q-header">
+              <span class="q-number">Q{{ i + 1 }}</span>
+              <span class="q-type-badge">{{ q.type === 'mcq' ? 'MCQ' : 'SINGLE' }}</span>
+              <button class="delete-q-btn" (click)="removeQuestion(i)" title="Delete question">
+                <span class="material-symbols-rounded">delete</span>
+              </button>
             </div>
-            <div class="form-group" style="max-width: 120px;">
-              <label class="form-label">Marks</label>
-              <input class="form-input" type="number" [ngModel]="q.marks" (ngModelChange)="updateQuestion(i, 'marks', $event)" min="1">
+
+            <!-- Question Text (editable) -->
+            <div class="q-text-wrap">
+              <input class="q-text-input"
+                     [ngModel]="q.question"
+                     (ngModelChange)="updateQuestion(i, 'question', $event)"
+                     placeholder="Enter question text...">
+            </div>
+
+            <!-- Options Grid -->
+            <div class="options-grid">
+              @for (opt of q.options; track $index; let j = $index) {
+                <div class="option"
+                     [class.correct-answer]="q.correctAnswer && opt && q.correctAnswer === opt && opt !== ''"
+                     (click)="opt ? setCorrectAnswer(i, opt) : null">
+                  <div class="option-inner">
+                    <span class="option-marker">
+                      @if (q.correctAnswer && opt && q.correctAnswer === opt && opt !== '') {
+                        ✓
+                      }
+                    </span>
+                    <input class="option-input"
+                           [ngModel]="opt"
+                           (ngModelChange)="updateOption(i, j, $event)"
+                           placeholder="Option {{ ['A','B','C','D'][j] }}"
+                           (click)="$event.stopPropagation()">
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- Correct Answer Selector -->
+            <div class="correct-answer-row">
+              <span class="material-symbols-rounded correct-icon">check_circle</span>
+              <label class="correct-label">Correct Answer:</label>
+              <select class="correct-select"
+                      [ngModel]="q.correctAnswer"
+                      (ngModelChange)="setCorrectAnswer(i, $event)">
+                <option value="">-- Select --</option>
+                @for (opt of q.options; track $index; let j = $index) {
+                  @if (opt) {
+                    <option [value]="opt">{{ ['A','B','C','D'][j] }}. {{ opt }}</option>
+                  }
+                }
+              </select>
             </div>
           </div>
-        </div>
-      }
+        }
+      </div>
     }
 
     <button class="btn btn-primary btn-lg save-btn" (click)="onSave()" [disabled]="saving()">

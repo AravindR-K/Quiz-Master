@@ -83,6 +83,14 @@ export class HRUserHistoryComponent {
     return `${m}m ${s}s`;
   }
 
+  getComfortLevel(topic: string): string {
+    const u = this.user();
+    if (!u || !u.topicsOfInterest || !topic) return 'N/A';
+    
+    const interest = u.topicsOfInterest.find((t: any) => t.topic.toLowerCase() === topic.toLowerCase());
+    return interest ? `${interest.comfortLevel}%` : 'N/A';
+  }
+
   logout(): void {
     this.authService.logout();
   }
